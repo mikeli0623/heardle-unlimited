@@ -1,10 +1,249 @@
+body {
+  min-height: 100vh;
+  background-color: black;
+}
+
 .App {
-  /* text-align: center; */
-  background-color: #282c34;
-  /* min-height: 100vh; */
-  /* display: flex; */
-  /* flex-direction: column; */
-  /* align-items: center; */
-  /* justify-content: center; */
+  min-height: 100%;
   color: white;
 }
+
+.nav {
+  display: flex;
+  width: 100vw;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid grey;
+  user-select: none;
+}
+
+.header-button {
+  border: 2px solid white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  height: 32px;
+  width: 32px;
+  user-select: none;
+  cursor: pointer;
+}
+
+#logo {
+  height: 80px;
+  width: 180px;
+  background-size: 180px 80px;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin: 0 1%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  text-align: center;
+  font-size: 2rem;
+  user-select: none;
+}
+
+/* #main {
+  min-height: calc(100vh - 110px);
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+} */
+
+#dashboard {
+  min-height: calc(100vh - 110px);
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#player {
+  margin: 1% 0;
+  padding: 1% 0;
+  border-radius: 5px;
+  width: 100%;
+}
+
+#player-buttons-container {
+  display: grid;
+  grid-template-columns: 85px 90px 85px;
+  align-items: center;
+  justify-content: center;
+  grid-gap: 3px;
+}
+
+#player-play-button {
+  margin: auto;
+  height: 54px;
+  width: 54px;
+  background-size: 54px 54px;
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  border: 3px solid white;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.player-icon {
+  margin: auto;
+  cursor: pointer;
+}
+
+.player-icon:active {
+  transform: scale(0.9);
+  transition-duration: 0.15s;
+}
+
+.player-icon.next-icon:active {
+  transform: scale(0.9) rotate(45deg) translate(-4px, 4px);
+  transition-duration: 0.15s;
+}
+
+.add-time-icon {
+  border: 1.2px solid white;
+  height: 32px;
+  width: 55px;
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+
+.next-icon {
+  height: 22px;
+  width: 22px;
+  border-top: 5px solid white;
+  border-right: 5px solid white;
+  border-radius: 15%;
+  transform: rotate(45deg) translate(-4px, 4px);
+}
+
+.player-time {
+  padding: 0 1%;
+  user-select: none;
+}
+
+#player-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bounce {
+  animation: bounce 0.4s infinite alternate;
+}
+
+@keyframes bounce {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.05);
+  }
+}
+
+#guess-boxes {
+  margin: 1% 0;
+  padding: 0;
+  width: 100%;
+}
+
+.guess-box {
+  height: 40px;
+  margin: 0.5rem;
+  border: 1px solid grey;
+  text-align: left;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  padding-left: 10px;
+  user-select: none;
+}
+
+.guess-box.skip {
+  color: white;
+}
+
+#album-cover {
+  margin: 5px;
+  height: 300px;
+  width: 300px;
+  background-size: 300px 300px;
+}
+
+.bg-custom {
+  background-color: grey;
+}
+
+.btn-custom {
+  background-color: grey;
+  color: white;
+}
+
+.modal-content {
+  background-color: rgb(22, 22, 22);
+  color: white;
+}
+
+.modal-header {
+  border: 0;
+}
+
+.modal-footer {
+  border: 0;
+}
+
+.dropdown-menu {
+  overflow-y: auto;
+  max-height: 30vh;
+}
+
+.result-symbols {
+  width: 24px;
+  height: 24px;
+  background-size: 20px 20px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.guess-box-icon {
+  margin-right: 2%;
+  height: 10px;
+  width: 10px;
+  background-size: 10px 10px;
+}
+
+#scorebar-container {
+  max-height: 500px;
+  max-width: 500px;
+  border: 1px solid grey;
+}
+
+.scorebar {
+  margin-left: 1%;
+  height: 20px;
+  border: 1px solid rgb(56, 56, 56);
+}
+
+/* #continue-guest-text {
+  color: rgb(160, 160, 160);
+  cursor: pointer;
+  user-select: none;
+}
+
+#continue-guest-text:hover {
+  color: rgb(199, 199, 199);
+} */

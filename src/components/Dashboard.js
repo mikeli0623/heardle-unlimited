@@ -1,285 +1,130 @@
-import { useState, useEffect, Fragment, useContext } from "react";
-import useAuth from "./useAuth";
-import Player from "./Player";
-import Stats from "./Stats";
+import { useState, useEffect, Fragment, useMemo, useContext } from "react";
 import ModeContext from "./ModeContext";
+import Player from "./Player";
 import TrackSearchResult from "./TrackSearchResult";
+import Results from "./Results";
+import GuessBoxes from "./GuessBoxes";
+import Settings from "./Settings";
 import { Container, Form } from "react-bootstrap";
-import SpotifyWebApi from "spotify-web-api-node";
-import * as mmb from "music-metadata-browser";
+import { matchSorter } from "match-sorter";
+import { countryCodes, decadeCodes } from "./data";
 
-const spotifyApi = new SpotifyWebApi({
-  clientId: "cb09cd6fc8b14816adfcc582ec5698b2",
-});
-
-var a,
-  timeoutID,
-  metadataList = [];
-
-export default function Dashboard({ code }) {
-  const { mode, setMode } = useContext(ModeContext);
-  const accessToken = useAuth(code);
+export default function Dashboard({
+  accessToken,
+  spotifyApi,
+  showSettings,
+  setShowSettings,
+  username,
+  setStreak,
+  setFails,
+  setWins,
+}) {
+  const { mode } = useContext(ModeContext);
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [playingTrack, setPlayingTrack] = useState();
-
-  useEffect(() => {
-    if (!accessToken) return;
-    spotifyApi.setAccessToken(accessToken);
-    setMode("spotify");
-  }, [accessToken, setMode]);
-
-  const [buttonState, setButtonState] = useState("Play");
-
   const [gameState, setGameState] = useState("thinking");
-
   const [songIndex, setSongIndex] = useState();
-
-  const [songPic, setSongPic] = useState(null);
-
+  const [userAnswers, setUserAnswers] = useState([]);
   const [userAnswer, setUserAnswer] = useState(null);
+  const [timeIndex, setTimeIndex] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const times = useMemo(() => [1, 2, 4, 7, 11, 16], []);
 
-  const [audio, setAudio] = useState();
-
-  const [audioFileList, setAudioFileList] = useState([]);
-
-  const [timeState, setTimeState] = useState({
-    times: [1, 2, 3, 5, 8, 13],
-    index: 0,
-  });
-
-  useEffect(() => {
-    if (a) {
-      a.pause();
-      a = null;
-      setButtonState("Play");
-    }
-    if (audio) {
-      a = new Audio(audio);
-      a.onended = () => {
-        setButtonState("Play");
-      };
-    }
-  }, [audio]);
-
-  useEffect(() => {
-    if (audioFileList.length) {
-      const idx = Math.floor(Math.random() * audioFileList.length);
-      setSongIndex(idx);
-      const nextSong = audioFileList[idx];
-      setAudio(URL.createObjectURL(nextSong));
-    }
-  }, [audioFileList]);
+  const [activeSavedPlaylist, setActiveSavedPlaylist] = useState(null);
+  const [activeCountry, setActiveCountry] = useState("Global");
+  const [activeDecade, setActiveDecade] = useState(null);
 
   const handleAdd = () => {
-    if (mode === "local") {
-      if (a && !showAnswer) {
-        setButtonState("Pause");
-        setTimeState({ ...timeState, index: timeState.index + 1 });
-        clearTimeout(timeoutID);
-        a.pause();
-        a.currentTime = 0;
-        a.play();
-        timeoutID = setTimeout(() => {
-          a.pause();
-          a.currentTime = 0;
-          setButtonState("Play");
-        }, 1000 * timeState.times[timeState.index + 1]);
-      }
-    } else {
-      setTimeState({ ...timeState, index: timeState.index + 1 });
+    if (searchResults.length && !showAnswer) {
+      setTimeIndex((prevIndex) => prevIndex + 1);
+      setUserAnswers([...userAnswers, "skip"]);
     }
   };
 
   const handleNext = () => {
-    if (mode === "local") {
-      if (a) {
-        if (gameState !== "Won" && !showAnswer) setScore(score - 1);
-        let audioListClone = [...audioFileList];
-        audioListClone.splice(songIndex, 1);
-        setAudioFileList(audioListClone);
-        metadataList.splice(songIndex, 1);
-        setGameState("thinking");
-        setTimeState({ ...timeState, index: 0 });
-        setShowAnswer(false);
-        setUserAnswer(null);
-      }
-    } else {
-      if (gameState !== "Won" && !showAnswer) setScore(score - 1);
-      let searchResultsClone = [...searchResults];
-      searchResultsClone.splice(songIndex, 1);
-      setSearchResults(searchResultsClone);
-      setGameState("thinking");
-      setTimeState({ ...timeState, index: 0 });
-      setShowAnswer(false);
-      setUserAnswer(null);
+    if (searchResults.length === 0 || searchResults.length === 1) return;
+    if (gameState !== "Won" && !showAnswer) {
+      setStreak((prevStreak) => prevStreak - 1);
+      setFails((prevFails) => prevFails + 1);
     }
+    let searchResultsClone = [...searchResults];
+    searchResultsClone.splice(songIndex, 1);
+    setSearchResults(searchResultsClone);
+    setGameState("thinking");
+    setTimeIndex(0);
+    setShowAnswer(false);
+    setUserAnswer(null);
+    setUserAnswers([]);
+    setSearch("");
+    setBeatOffset(0);
   };
 
-  const handlePlay = () => {
-    if (a) {
-      if (buttonState === "Play") {
-        a.play();
-        setButtonState("Pause");
-        if (!showAnswer) {
-          clearTimeout(timeoutID);
-          timeoutID = setTimeout(() => {
-            a.pause();
-            a.currentTime = 0;
-            setButtonState("Play");
-          }, 1000 * timeState.times[timeState.index]);
-        }
-      } else {
-        clearTimeout(timeoutID);
-        a.pause();
-        a.currentTime = 0;
-        setButtonState("Play");
-      }
-    }
-  };
-
-  const [isMetadataLoading, setIsMetadataLoading] = useState(false);
-
-  const [metadataLoaded, setMetadataLoaded] = useState(0);
-
-  const handleUpload = async (e) => {
-    metadataList = [];
-    if (e.target.files.length !== 0) {
-      var files = e.target.files;
-      files = [...files].filter((file) => file.type === "audio/mpeg");
-      setAudioFileList(files);
-      setIsMetadataLoading(true);
-      for (var file of files) metadataList.push(await parseFile(file));
-    }
-  };
-
-  const parseFile = async (file) => {
-    return mmb.parseBlob(file, { native: true }).then((metadata) => {
-      setMetadataLoaded((prevMetadataLoaded) => prevMetadataLoaded + 1);
-      return metadata;
-    });
-  };
-
+  // determines outcome of game based off user answer
   useEffect(() => {
-    if (
-      !isMetadataLoading &&
-      metadataList.length > 0 &&
-      metadataList[songIndex].common.picture
-    )
-      setSongPic(
-        URL.createObjectURL(
-          new Blob([metadataList[songIndex].common.picture[0].data.buffer], {
-            type: "image/png",
-          })
-        )
-      );
-  }, [isMetadataLoading, songIndex]);
-
-  useEffect(() => {
-    if (metadataLoaded >= audioFileList.length) setIsMetadataLoading(false);
-  }, [metadataLoaded, audioFileList]);
-
-  const [score, setScore] = useState(0);
-
-  useEffect(() => {
-    if (mode === "local" && metadataList && userAnswer) {
-      if (
-        userAnswer.title.toLowerCase() ===
-          metadataList[songIndex].common.title.toLowerCase() &&
-        userAnswer.artists[0].name.toLowerCase() ===
-          metadataList[songIndex].common.artist.toLowerCase()
-      ) {
+    if (userAnswer) {
+      if (searchResults[songIndex] === userAnswer) {
         setGameState("Won");
-      } else setGameState("Lost");
-      setShowAnswer(true);
+        setStreak((prevStreak) => (prevStreak < 0 ? 1 : prevStreak + 1));
+        setShowAnswer(true);
+        setWins((prevWins) => {
+          var winsClone = [...prevWins];
+          winsClone[timeIndex]++;
+          return [...winsClone];
+        });
+      } else if (timeIndex === times.length - 1) {
+        setGameState("Lost");
+        setStreak((prevStreak) => (prevStreak > 0 ? 0 : prevStreak - 1));
+        setShowAnswer(true);
+        setFails((prevState) => prevState + 1);
+      } else {
+        setTimeIndex(timeIndex + 1);
+        setSearch("");
+      }
+      setUserAnswer(null);
+      setUserAnswers((prevState) => [...prevState, userAnswer.pattern]);
     }
-    if (mode === "spotify" && userAnswer) {
-      if (searchResults[songIndex] === userAnswer) setGameState("Won");
-      else setGameState("Lost");
-      setShowAnswer(true);
-    }
-  }, [userAnswer, songIndex, mode, playingTrack, searchResults]);
-
-  const [showAnswer, setShowAnswer] = useState(false);
-
-  useEffect(() => {
-    if (gameState === "Won") setScore((prevScore) => prevScore + 1);
-    else if (gameState === "Lost") setScore((prevScore) => prevScore - 1);
-  }, [gameState]);
-
-  const searchList = () => {
-    if (metadataList) {
-      return metadataList.map((metadata, index) => {
-        return {
-          artists: [{ name: metadata.common.artist }],
-          title: metadata.common.title,
-          uri: URL.createObjectURL(audioFileList[index]),
-          albumUrl: metadata.common.picture
-            ? URL.createObjectURL(
-                new Blob([metadata.common.picture[0].data.buffer], {
-                  type: "image/png",
-                })
-              )
-            : null,
-        };
-      });
-    } else return null;
-  };
+  }, [
+    userAnswer,
+    songIndex,
+    searchResults,
+    times,
+    timeIndex,
+    setWins,
+    setFails,
+    setStreak,
+  ]);
 
   const handleShowAnswer = () => {
-    if (mode === "local") {
-      if (a) {
-        setShowAnswer(true);
-        if (gameState !== "Won") setGameState("Lost");
-      }
-    } else {
-      setShowAnswer(true);
-      if (gameState !== "Won") setGameState("Lost");
-    }
+    if (showAnswer) return;
+    setShowAnswer(true);
+    setUserAnswer("_");
   };
 
-  const chooseAnswer = (track) => {
-    setUserAnswer(track);
-  };
+  const [beatOffset, setBeatOffset] = useState(0);
 
   useEffect(() => {
-    if (searchResults.length) {
-      const idx = Math.floor(Math.random() * searchResults.length);
-      setSongIndex(idx);
-      const nextSong = searchResults[idx];
-      setPlayingTrack(nextSong);
-    }
-  }, [searchResults]);
-
-  const chooseSavedTracks = () => {
-    if (!accessToken) return;
-    spotifyApi.getMySavedTracks().then(
+    spotifyApi.getPlaylist("37i9dQZEVXbMDoHDwVN2tF").then(
       (res) => {
-        console.log(res.body.items);
         setSearchResults(
-          res.body.items.map((item) => {
-            const smallestAlbumImage = item.track.album.images.reduce(
-              (smallest, image) => {
-                if (image.height < smallest.height) return image;
-                return smallest;
-              },
-              item.track.album.images[0]
-            );
-            const mediumAlbumImage = item.track.album.images.reduce(
-              (comp, image) => {
-                if (image.height === 300) return image;
-                return comp;
-              },
-              item.track.album.images[0]
-            );
-
+          res.body.tracks.items.map((item) => {
             return {
               artists: item.track.artists,
               title: item.track.name,
+              pattern: (
+                item.track.artists.map((artist) => {
+                  return artist.name;
+                }) +
+                " - " +
+                item.track.name
+              ).replace(",", " "),
               uri: item.track.uri,
+              id: item.track.id,
               album: item.track.album.name,
-              albumUrlMed: mediumAlbumImage.url,
-              albumUrlSmall: smallestAlbumImage.url,
+              albumUrlLarge: item.track.album.images[0].url,
+              albumUrlMed: item.track.album.images[1].url,
+              albumUrlSmall: item.track.album.images[2].url,
+              duration: Math.round(item.track.duration_ms / 1000),
             };
           })
         );
@@ -288,128 +133,227 @@ export default function Dashboard({ code }) {
         console.log("Something went wrong!", err);
       }
     );
-  };
+  }, [spotifyApi]);
 
-  const chooseSavedAlbums = () => {
-    if (!accessToken) return;
-    spotifyApi.getMySavedAlbums().then(
-      (data) => {
-        console.log(data.body.items);
+  useEffect(() => {
+    if (searchResults.length) {
+      // soft reset
+      setGameState("thinking");
+      setTimeIndex(0);
+      setShowAnswer(false);
+      setUserAnswer(null);
+      setUserAnswers([]);
+      setSearch("");
+      setBeatOffset(0);
+
+      const idx = Math.floor(Math.random() * searchResults.length);
+      setSongIndex(idx);
+      const nextSong = searchResults[idx];
+      setPlayingTrack(nextSong);
+      spotifyApi.getAudioAnalysisForTrack(nextSong.id).then(
+        (res) => {
+          if (res.body.beats[0].start > 1.0) {
+            setBeatOffset(res.body.beats[0].start);
+          }
+        },
+        (err) => {
+          console.log("Something went wrong!", err);
+        }
+      );
+    }
+  }, [searchResults, spotifyApi]);
+
+  const [savedPlaylists, setSavedPlaylists] = useState([]);
+
+  // grab user info
+  useEffect(() => {
+    if (username) {
+      spotifyApi.getUserPlaylists(username, { limit: 50 }).then(
+        (res) => {
+          let obj = {};
+          res.body.items.forEach((playlist) => (obj[playlist.name] = playlist));
+          setSavedPlaylists(obj);
+        },
+        (err) => {
+          console.log("Something went wrong!", err);
+        }
+      );
+    }
+  }, [username, spotifyApi]);
+
+  useEffect(() => {
+    if (!activeCountry) return;
+    spotifyApi.getPlaylist(countryCodes[activeCountry]).then(
+      (res) => {
+        setSearchResults(
+          res.body.tracks.items.map((item) => {
+            return {
+              artists: item.track.artists,
+              title: item.track.name,
+              pattern: (
+                item.track.artists.map((artist) => {
+                  return artist.name;
+                }) +
+                " - " +
+                item.track.name
+              ).replace(",", " "),
+              uri: item.track.uri,
+              id: item.track.id,
+              album: item.track.album.name,
+              albumUrlLarge: item.track.album.images[0].url,
+              albumUrlMed: item.track.album.images[1].url,
+              albumUrlSmall: item.track.album.images[2].url,
+              duration: Math.round(item.track.duration_ms / 1000),
+            };
+          })
+        );
       },
       (err) => {
         console.log("Something went wrong!", err);
       }
     );
-  };
+  }, [spotifyApi, activeCountry, setSearchResults]);
+
+  useEffect(() => {
+    if (!activeSavedPlaylist || mode === "guest") return;
+    spotifyApi.getPlaylist(savedPlaylists[activeSavedPlaylist].id).then(
+      (res) => {
+        setSearchResults(
+          res.body.tracks.items.map((item) => {
+            return {
+              artists: item.track.artists,
+              title: item.track.name,
+              pattern: (
+                item.track.artists.map((artist) => {
+                  return artist.name;
+                }) +
+                " - " +
+                item.track.name
+              ).replace(",", " "),
+              uri: item.track.uri,
+              id: item.track.id,
+              album: item.track.album.name,
+              albumUrlLarge: item.track.album.images[0].url,
+              albumUrlMed: item.track.album.images[1].url,
+              albumUrlSmall: item.track.album.images[2].url,
+              duration: Math.round(item.track.duration_ms / 1000),
+            };
+          })
+        );
+      },
+      (err) => {
+        console.log("Something went wrong!", err);
+      }
+    );
+  }, [spotifyApi, activeSavedPlaylist, setSearchResults, savedPlaylists, mode]);
+
+  useEffect(() => {
+    if (!activeDecade) return;
+    spotifyApi.getPlaylist(decadeCodes[activeDecade]).then(
+      (res) => {
+        setSearchResults(
+          res.body.tracks.items.map((item) => {
+            return {
+              artists: item.track.artists,
+              title: item.track.name,
+              pattern: (
+                item.track.artists.map((artist) => {
+                  return artist.name;
+                }) +
+                " - " +
+                item.track.name
+              ).replace(",", " "),
+              uri: item.track.uri,
+              id: item.track.id,
+              album: item.track.album.name,
+              albumUrlLarge: item.track.album.images[0].url,
+              albumUrlMed: item.track.album.images[1].url,
+              albumUrlSmall: item.track.album.images[2].url,
+              duration: Math.round(item.track.duration_ms / 1000),
+            };
+          })
+        );
+      },
+      (err) => {
+        console.log("Something went wrong!", err);
+      }
+    );
+  }, [spotifyApi, activeDecade, setSearchResults]);
 
   return (
-    <Container className="d-flex flex-column py-2" style={{ height: "100vh" }}>
-      <Stats
-        gameState={gameState}
-        metadataList={metadataList}
-        showAnswer={showAnswer}
-        isMetadataLoading={isMetadataLoading}
-        songIndex={songIndex}
-        songPic={songPic}
-        timeState={timeState}
-        score={score}
-        searchResults={searchResults}
-      />
-      <Form.Control
-        type="search"
-        placeholder="Search Songs/Artists"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-      {!isMetadataLoading && (
-        <div className="flex-grow-1 my-2" style={{ overflowY: "auto" }}>
-          {mode === "local"
-            ? searchList()?.map((track) => (
-                <TrackSearchResult
-                  track={track}
-                  key={track.uri}
-                  chooseAnswer={chooseAnswer}
-                />
-              ))
-            : searchResults.map((track) => (
-                <TrackSearchResult
-                  track={track}
-                  key={track.uri}
-                  chooseAnswer={chooseAnswer}
-                />
-              ))}
-        </div>
-      )}
-      {/* <div className="flex-grow-1 my-2" style={{ overflowY: "auto" }}>
-        {searchResults.map((track) => (
-          <TrackSearchResult
-            track={track}
-            key={track.uri}
-            chooseAnswer={chooseAnswer}
-          />
-        ))}
-      </div> */}
-      <button onClick={chooseSavedTracks}>Saved Tracks</button>
-      {/* <button onClick={chooseSavedAlbums}>Saved Albums</button> */}
-      <button
-        onClick={handleAdd}
-        disabled={
-          isMetadataLoading ||
-          timeState.index + 1 === timeState.times.length ||
-          showAnswer
-        }
-      >
-        Add Time
-      </button>
-      <button
-        onClick={handleNext}
-        disabled={
-          isMetadataLoading ||
-          audioFileList.length === 1 ||
-          searchResults.length === 1
-        }
-      >
-        Next Song
-      </button>
-      <button
-        onClick={handleShowAnswer}
-        disabled={isMetadataLoading || showAnswer}
-      >
-        Show Answer
-      </button>
-      {/* <input
-        type="file"
-        onChange={handleUpload}
-        onClick={() => {
-          if (a) {
-            a.pause();
-            a.currentTime = 0;
-            setButtonState("Play");
-          }
-        }}
-        webkitdirectory="true"
-        multiple
-      /> */}
-      {isMetadataLoading && (
+    <Container id="dashboard">
+      {showSettings ? (
+        <Settings
+          spotifyApi={spotifyApi}
+          setSearchResults={setSearchResults}
+          close={() => setShowSettings(false)}
+          savedPlaylists={savedPlaylists}
+          activeSavedPlaylist={activeSavedPlaylist}
+          setActiveSavedPlaylist={setActiveSavedPlaylist}
+          activeCountry={activeCountry}
+          setActiveCountry={setActiveCountry}
+          activeDecade={activeDecade}
+          setActiveDecade={setActiveDecade}
+        />
+      ) : showAnswer ? (
+        <Results
+          gameState={gameState}
+          userAnswers={userAnswers}
+          times={times}
+          timeIndex={timeIndex}
+          songIndex={songIndex}
+          searchResults={searchResults}
+        />
+      ) : (
         <Fragment>
-          <label htmlFor="metadata">
-            Loading {metadataLoaded} of {audioFileList.length}
-          </label>
-          <progress
-            id="metadata"
-            value={metadataLoaded}
-            max={audioFileList.length}
+          <GuessBoxes
+            times={times}
+            timeIndex={timeIndex}
+            userAnswers={userAnswers}
           />
+          <Form.Control
+            type="search"
+            placeholder="Search Songs/Artists"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <div
+            className="flex-grow-1 my-2 overflow-auto"
+            style={{ height: "10vh" }}
+          >
+            {search.length > 1 ? (
+              matchSorter(searchResults, search, { keys: ["pattern"] }).map(
+                (track) => (
+                  <TrackSearchResult
+                    track={track}
+                    key={track.uri}
+                    chooseAnswer={setUserAnswer}
+                  />
+                )
+              )
+            ) : (
+              <></>
+            )}
+          </div>
         </Fragment>
       )}
       <Player
         accessToken={accessToken}
         trackUri={playingTrack?.uri}
-        buttonState={buttonState}
-        handlePlay={handlePlay}
-        timeValue={timeState.times[timeState.index]}
+        timeValue={times[timeIndex]}
         spotifyApi={spotifyApi}
+        offset={beatOffset}
         showAnswer={showAnswer}
+        totalTime={
+          showAnswer
+            ? playingTrack.duration
+            : times[timeIndex] + Math.round(beatOffset)
+        }
+        timeIndex={timeIndex}
+        times={times}
+        handleShowAnswer={handleShowAnswer}
+        handleAdd={handleAdd}
+        handleNext={handleNext}
       />
     </Container>
   );

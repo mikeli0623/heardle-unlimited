@@ -1,6 +1,6 @@
 import React from "react";
 const ModeContext = React.createContext({
-  mode: "local",
+  mode: "none",
   setMode: () => {},
 });
 

@@ -1,4 +1,5 @@
-import React from "react";
+// import { useContext } from "react";
+// import ModeContext from "./ModeContext";
 import { Container } from "react-bootstrap";
 
 const AUTH_URL =
@@ -7,12 +8,15 @@ const AUTH_URL =
 export default function Login() {
   return (
     <Container
-      className="d-flex justify-content-center align-items-center"
-      style={{ minHeight: "100vh" }}
+      className="d-flex flex-column justify-content-center align-items-center"
+      style={{ minHeight: "calc(100vh - 110px)" }}
     >
       <a className="btn btn-success btn-lg" href={AUTH_URL}>
         Login to Spotify
       </a>
+      {/* <div id="continue-guest-text" onClick={() => setMode("guest")}>
+        Continue as guest
+      </div> */}
     </Container>
   );
 }
