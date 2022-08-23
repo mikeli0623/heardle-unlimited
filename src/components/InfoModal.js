@@ -36,7 +36,7 @@ export default function InfoModal({ show, onHide }) {
           How to Play
         </Modal.Title>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body style={{ paddingLeft: "1%" }}>
         <Rule
           icon="spotify"
           rule="Login to your Spotify account. Needs to be premium."

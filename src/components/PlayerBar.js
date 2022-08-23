@@ -25,21 +25,11 @@ export default function PlayerBar({
     return diff;
   };
 
-  useEffect(() => {
-    // console.log(diffValues(times));
-    console.log([...times].splice(timeIndex, times.length));
-  });
-
   return (
     <div id="player-bar">
       <span className="player-time">
         {time > totalTime ? calcTime(totalTime) : calcTime(time)}
       </span>
-      {/* <ProgressBar
-        variant="custom"
-        now={(strictRound(time, 0.5) / totalTime) * 100}
-        style={{ width: "800px", height: "10px" }}
-      /> */}
       <ProgressBar
         className="no-transition"
         style={{ width: "800px", height: "10px" }}
