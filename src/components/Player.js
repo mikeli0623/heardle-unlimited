@@ -139,7 +139,7 @@ export default function Player({
     return () => clearInterval(syncInterval);
   }, [player, isPlaying, showAnswer]);
 
-  // timer of song
+  // timer of track
   useEffect(() => {
     var timer;
     const interval = 200;
@@ -153,7 +153,7 @@ export default function Player({
     return () => clearInterval(timer);
   }, [isPlaying, showAnswer, time, totalTime]);
 
-  // seeks to start of song when time is added
+  // seeks to start of track when time is added
   useEffect(() => {
     if (!accessToken || showAnswer || !isActive || isFirstPlay) return;
     player.pause();
@@ -174,9 +174,9 @@ export default function Player({
         <PlayerBar
           time={time}
           totalTime={showAnswer ? totalTime : times[times.length - 1] + offset}
-          showAnswer={showAnswer}
           times={times}
           timeIndex={timeIndex}
+          offset={offset}
         />
         <PlayerButtons
           disabled={!isActive}

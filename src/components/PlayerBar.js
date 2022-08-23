@@ -1,13 +1,12 @@
-import { useEffect } from "react";
 import { ProgressBar } from "react-bootstrap";
 import { strictRound } from "../utils";
 
 export default function PlayerBar({
   time,
   totalTime,
-  showAnswer,
   times,
   timeIndex,
+  offset,
 }) {
   // outputs time format from seconds
   const calcTime = (seconds) => {
@@ -43,7 +42,7 @@ export default function PlayerBar({
           variant="light"
           className="no-transition"
           now={
-            (times[timeIndex] / totalTime) * 100 -
+            ((times[timeIndex] + offset) / totalTime) * 100 -
             (strictRound(time, 0.5) / totalTime) * 100
           }
           key="given-time"

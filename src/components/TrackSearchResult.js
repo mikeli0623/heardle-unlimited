@@ -5,7 +5,7 @@ export default function TrackSearchResult({ track, chooseAnswer }) {
     <div
       className="d-flex m-2 align-items-center"
       style={{ cursor: "pointer" }}
-      onClick={() => chooseAnswer(track)}
+      onClick={() => chooseAnswer(track.pattern)}
     >
       <div
         style={{

@@ -6,7 +6,6 @@ import Dashboard from "./components/Dashboard";
 import Header from "./components/Header";
 import ModeContext from "./components/ModeContext";
 import SpotifyWebApi from "spotify-web-api-node";
-import { countryCodes, decadeCodes } from "./data";
 
 const code = new URLSearchParams(window.location.search).get("code");
 
@@ -23,18 +22,12 @@ const App = () => {
   const [fails, setFails] = useState(0);
   const [wins, setWins] = useState([0, 0, 0, 0, 0, 0]);
   const [pool, setPool] = useState([]);
-  const [activeSavedPlaylist, setActiveSavedPlaylist] = useState(null);
-  const [activeCountry, setActiveCountry] = useState(null);
-  const [activeDecade, setActiveDecade] = useState(null);
+  const [activePool, setActivePool] = useState(null);
   const [savedPlaylists, setSavedPlaylists] = useState([]);
   const [poolName, setPoolName] = useState(null);
   const [isPremium, setPremium] = useState(false);
 
   const accessToken = useAuth(code);
-
-  const getObjKey = (obj, value) => {
-    return Object.keys(obj).find((key) => obj[key] === value);
-  };
 
   useEffect(() => {
     if (!accessToken) return;
@@ -51,9 +44,11 @@ const App = () => {
     if (username) {
       spotifyApi.getUserPlaylists(username, { limit: 50 }).then(
         (res) => {
-          let obj = {};
-          res.body.items.forEach((playlist) => (obj[playlist.name] = playlist));
-          setSavedPlaylists(obj);
+          let playlistOptions = [];
+          res.body.items.forEach((playlist) =>
+            playlistOptions.push({ label: playlist.name, value: playlist.id })
+          );
+          setSavedPlaylists(playlistOptions);
         },
         (err) => {
           console.log("Something went wrong!", err);
@@ -62,51 +57,53 @@ const App = () => {
     }
   }, [username]);
 
+  // sets default pool as Top 50 - Global
   useEffect(() => {
-    if (accessToken) setActiveCountry("Global");
+    if (accessToken) {
+      setPoolName("Top 50 Tracks - Global");
+      setActivePool({ label: "Global", value: "37i9dQZEVXbMDoHDwVN2tF" });
+    }
   }, [accessToken]);
 
   useEffect(() => {
-    if (!activeCountry) return;
-    setPoolName(
-      `Top 50 Tracks - ${getObjKey(countryCodes, countryCodes[activeCountry])}`
-    );
-    spotifyApi.getPlaylist(countryCodes[activeCountry]).then(
-      (res) => {
-        setPool(
-          res.body.tracks.items.map((item) => {
-            return {
-              artists: item.track.artists,
-              title: item.track.name,
-              pattern: (
-                item.track.artists.map((artist) => {
-                  return artist.name;
-                }) +
-                " - " +
-                item.track.name
-              ).replace(",", " "),
-              uri: item.track.uri,
-              id: item.track.id,
-              album: item.track.album.name,
-              albumUrlLarge: item.track.album.images[0].url,
-              albumUrlMed: item.track.album.images[1].url,
-              albumUrlSmall: item.track.album.images[2].url,
-              duration: Math.round(item.track.duration_ms / 1000),
-            };
-          })
-        );
-      },
-      (err) => {
-        console.log("Something went wrong!", err);
-      }
-    );
-  }, [activeCountry]);
+    if (!activePool) return;
+    // var offset = 0;
+    // var promises = [];
+    // while (offset < 200) {
+    //   promises.push(spotifyApi.getMySavedTracks({ limit: 50, offset: offset }));
+    //   offset += 50;
+    // }
 
-  useEffect(() => {
-    if (!activeSavedPlaylist || mode === "guest") return;
-    setPoolName(`My Playlist - ${activeSavedPlaylist}`);
-    spotifyApi.getPlaylist(savedPlaylists[activeSavedPlaylist].id).then(
+    // const responses = await Promise.all(promises);
+    // responses.map((res) => {
+    //   if (res.body.items.length)
+    //     setPool(
+    //       res.body.items.map((item) => {
+    //         return {
+    //           artists: item.track.artists,
+    //           title: item.track.name,
+    //           pattern: (
+    //             item.track.artists.map((artist) => {
+    //               return artist.name;
+    //             }) +
+    //             " - " +
+    //             item.track.name
+    //           ).replace(",", " "),
+    //           uri: item.track.uri,
+    //           id: item.track.id,
+    //           album: item.track.album.name,
+    //           albumUrlLarge: item.track.album.images[0].url,
+    //           albumUrlMed: item.track.album.images[1].url,
+    //           albumUrlSmall: item.track.album.images[2].url,
+    //           duration: Math.round(item.track.duration_ms / 1000),
+    //         };
+    //       })
+    //     );
+    //   return res;
+    // });
+    spotifyApi.getPlaylist(activePool.value).then(
       (res) => {
+        console.log(res.body);
         setPool(
           res.body.tracks.items.map((item) => {
             return {
@@ -134,43 +131,7 @@ const App = () => {
         console.log("Something went wrong!", err);
       }
     );
-  }, [activeSavedPlaylist, savedPlaylists, mode]);
-
-  useEffect(() => {
-    if (!activeDecade) return;
-    setPoolName(
-      `Top 50 Tracks - ${getObjKey(decadeCodes, decadeCodes[activeDecade])}`
-    );
-    spotifyApi.getPlaylist(decadeCodes[activeDecade]).then(
-      (res) => {
-        setPool(
-          res.body.tracks.items.map((item) => {
-            return {
-              artists: item.track.artists,
-              title: item.track.name,
-              pattern: (
-                item.track.artists.map((artist) => {
-                  return artist.name;
-                }) +
-                " - " +
-                item.track.name
-              ).replace(",", " "),
-              uri: item.track.uri,
-              id: item.track.id,
-              album: item.track.album.name,
-              albumUrlLarge: item.track.album.images[0].url,
-              albumUrlMed: item.track.album.images[1].url,
-              albumUrlSmall: item.track.album.images[2].url,
-              duration: Math.round(item.track.duration_ms / 1000),
-            };
-          })
-        );
-      },
-      (err) => {
-        console.log("Something went wrong!", err);
-      }
-    );
-  }, [activeDecade]);
+  }, [activePool]);
 
   return (
     <div className="App">
@@ -182,12 +143,8 @@ const App = () => {
           spotifyApi={spotifyApi}
           setPool={setPool}
           savedPlaylists={savedPlaylists}
-          activeSavedPlaylist={activeSavedPlaylist}
-          setActiveSavedPlaylist={setActiveSavedPlaylist}
-          activeCountry={activeCountry}
-          setActiveCountry={setActiveCountry}
-          activeDecade={activeDecade}
-          setActiveDecade={setActiveDecade}
+          activePool={activePool}
+          setActivePool={setActivePool}
           setPoolName={setPoolName}
         />
         {mode === "none" ? (

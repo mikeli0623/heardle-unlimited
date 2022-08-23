@@ -1,4 +1,4 @@
-import { Modal, Button } from "react-bootstrap";
+import { Modal, Button, Container } from "react-bootstrap";
 
 const Rule = ({ icon, rule }) => {
   return (
@@ -36,27 +36,29 @@ export default function InfoModal({ show, onHide }) {
           How to Play
         </Modal.Title>
       </Modal.Header>
-      <Modal.Body style={{ paddingLeft: "1%" }}>
-        <Rule
-          icon="spotify"
-          rule="Login to your Spotify account. Needs to be premium."
-        />
-        <Rule
-          icon="settings"
-          rule="Set your track pool with this icon (default Top 50 Tracks - Global)"
-        />
-        <Rule
-          icon="listen"
-          rule="Listen to the intro of the song and guess the right track."
-        />
-        <Rule
-          icon="surrender"
-          rule="Skips or incorrect guesses add time to the intro."
-        />
-        <Rule
-          icon="smile"
-          rule="Guess in as little attempts as possible and reach for a high streak. Enjoy!"
-        />
+      <Modal.Body>
+        <Container>
+          <Rule
+            icon="spotify"
+            rule="Login to your Spotify account. Needs to be premium."
+          />
+          <Rule
+            icon="settings"
+            rule="Set your track pool with this icon (default Top 50 Tracks - Global)"
+          />
+          <Rule
+            icon="listen"
+            rule="Listen to the intro of the track and guess the right name."
+          />
+          <Rule
+            icon="surrender"
+            rule="Skips or incorrect guesses add time to the intro."
+          />
+          <Rule
+            icon="smile"
+            rule="Guess in as little attempts as possible and reach for a high streak. Enjoy!"
+          />
+        </Container>
       </Modal.Body>
       <Modal.Footer
         style={{

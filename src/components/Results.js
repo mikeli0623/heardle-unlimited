@@ -11,13 +11,7 @@ const ResultSymbols = ({ result }) => {
   );
 };
 
-export default function Results({
-  gameState,
-  times,
-  songIndex,
-  userAnswers,
-  pool,
-}) {
+export default function Results({ won, times, trackIndex, userAnswers, pool }) {
   const winQuotes = ["You won!"];
   const loseQuotes = ["You lost.", "Better luck next time.", "So close."];
 
@@ -29,19 +23,19 @@ export default function Results({
       <div
         id="album-cover"
         style={{
-          backgroundImage: `url(${pool[songIndex].albumUrlMed})`,
+          backgroundImage: `url(${pool[trackIndex].albumUrlMed})`,
         }}
       />
       <h4>
-        {gameState === "Won"
+        {won
           ? winQuotes[Math.floor(Math.random() * winQuotes.length)]
           : loseQuotes[Math.floor(Math.random() * loseQuotes.length)]}
       </h4>
-      Title: {pool[songIndex].title}
+      Title: {pool[trackIndex].title}
       <br />
-      Artist: {pool[songIndex].artists[0].name}
+      Artist: {pool[trackIndex].artists[0].name}
       <br />
-      Album: {pool[songIndex].album}
+      Album: {pool[trackIndex].album}
       <br />
       <div className="d-flex">
         {times.map((time, index) => {
@@ -53,7 +47,7 @@ export default function Results({
                   ? "empty"
                   : userAnswers[index] === "skip"
                   ? "skip"
-                  : userAnswers[index] === pool[songIndex].pattern
+                  : userAnswers[index] === pool[trackIndex].pattern
                   ? "correct"
                   : "wrong"
               }

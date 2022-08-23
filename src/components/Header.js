@@ -12,12 +12,8 @@ export default function Header({
   spotifyApi,
   setPool,
   savedPlaylists,
-  activeSavedPlaylist,
-  setActiveSavedPlaylist,
-  activeCountry,
-  setActiveCountry,
-  activeDecade,
-  setActiveDecade,
+  activePool,
+  setActivePool,
   setPoolName,
 }) {
   const { mode } = useContext(ModeContext);
@@ -87,12 +83,8 @@ export default function Header({
         spotifyApi={spotifyApi}
         setPool={setPool}
         savedPlaylists={savedPlaylists}
-        activeSavedPlaylist={activeSavedPlaylist}
-        setActiveSavedPlaylist={setActiveSavedPlaylist}
-        activeCountry={activeCountry}
-        setActiveCountry={setActiveCountry}
-        activeDecade={activeDecade}
-        setActiveDecade={setActiveDecade}
+        activePool={activePool}
+        setActivePool={setActivePool}
         setPoolName={setPoolName}
       />
     </Nav>

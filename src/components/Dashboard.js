@@ -20,8 +20,7 @@ export default function Dashboard({
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [playingTrack, setPlayingTrack] = useState();
-  const [gameState, setGameState] = useState("thinking");
-  const [songIndex, setSongIndex] = useState();
+  const [trackIndex, setTrackIndex] = useState();
   const [userAnswers, setUserAnswers] = useState([]);
   const [userAnswer, setUserAnswer] = useState(null);
   const [timeIndex, setTimeIndex] = useState(0);
@@ -37,14 +36,13 @@ export default function Dashboard({
 
   const handleNext = () => {
     if (pool.length === 0 || pool.length === 1) return;
-    if (gameState !== "Won" && !showAnswer) {
+    if (!showAnswer) {
       setStreak((prevStreak) => prevStreak - 1);
       setFails((prevFails) => prevFails + 1);
     }
-    let searchResultsClone = [...pool];
-    searchResultsClone.splice(songIndex, 1);
-    setPool(searchResultsClone);
-    setGameState("thinking");
+    let poolClone = [...pool];
+    poolClone.splice(trackIndex, 1);
+    setPool(poolClone);
     setTimeIndex(0);
     setShowAnswer(false);
     setUserAnswer(null);
@@ -56,8 +54,7 @@ export default function Dashboard({
   // determines outcome of game based off user answer
   useEffect(() => {
     if (userAnswer) {
-      if (pool[songIndex].pattern === userAnswer.pattern) {
-        setGameState("Won");
+      if (userAnswer === pool[trackIndex].pattern) {
         setStreak((prevStreak) => (prevStreak < 0 ? 1 : prevStreak + 1));
         setShowAnswer(true);
         setWins((prevWins) => {
@@ -66,7 +63,6 @@ export default function Dashboard({
           return [...winsClone];
         });
       } else if (timeIndex === times.length - 1) {
-        setGameState("Lost");
         setStreak((prevStreak) => (prevStreak > 0 ? 0 : prevStreak - 1));
         setShowAnswer(true);
         setFails((prevState) => prevState + 1);
@@ -75,11 +71,11 @@ export default function Dashboard({
         setSearch("");
       }
       setUserAnswer(null);
-      setUserAnswers((prevState) => [...prevState, userAnswer.pattern]);
+      setUserAnswers((prevState) => [...prevState, userAnswer]);
     }
   }, [
     userAnswer,
-    songIndex,
+    trackIndex,
     pool,
     times,
     timeIndex,
@@ -99,7 +95,6 @@ export default function Dashboard({
   useEffect(() => {
     if (pool.length) {
       // soft reset
-      setGameState("thinking");
       setTimeIndex(0);
       setShowAnswer(false);
       setUserAnswer(null);
@@ -108,10 +103,10 @@ export default function Dashboard({
       setBeatOffset(0);
 
       const idx = Math.floor(Math.random() * pool.length);
-      setSongIndex(idx);
-      const nextSong = pool[idx];
-      setPlayingTrack(nextSong);
-      spotifyApi.getAudioAnalysisForTrack(nextSong.id).then(
+      setTrackIndex(idx);
+      const nextTrack = pool[idx];
+      setPlayingTrack(nextTrack);
+      spotifyApi.getAudioAnalysisForTrack(nextTrack.id).then(
         (res) => {
           if (res.body.beats[0].start > 1.0) {
             setBeatOffset(res.body.beats[0].start);
@@ -156,14 +151,15 @@ export default function Dashboard({
 
   return (
     <Container id="dashboard">
-      Pool: {poolName}
+      <div className="my-1">Pool: {poolName}</div>
+      <div>Tracks Remaining: {pool.length}</div>
       {showAnswer ? (
         <Results
-          gameState={gameState}
+          won={userAnswer === pool[trackIndex].pattern}
           userAnswers={userAnswers}
           times={times}
           timeIndex={timeIndex}
-          songIndex={songIndex}
+          trackIndex={trackIndex}
           pool={pool}
         />
       ) : (

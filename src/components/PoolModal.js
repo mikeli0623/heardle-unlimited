@@ -8,12 +8,8 @@ export default function PoolModal({
   setPool,
   setPoolName,
   savedPlaylists,
-  activeSavedPlaylist,
-  setActiveSavedPlaylist,
-  activeCountry,
-  setActiveCountry,
-  activeDecade,
-  setActiveDecade,
+  activePool,
+  setActivePool,
 }) {
   return (
     <Modal
@@ -38,12 +34,8 @@ export default function PoolModal({
           spotifyApi={spotifyApi}
           setPool={setPool}
           savedPlaylists={savedPlaylists}
-          activeSavedPlaylist={activeSavedPlaylist}
-          setActiveSavedPlaylist={setActiveSavedPlaylist}
-          activeCountry={activeCountry}
-          setActiveCountry={setActiveCountry}
-          activeDecade={activeDecade}
-          setActiveDecade={setActiveDecade}
+          activePool={activePool}
+          setActivePool={setActivePool}
           setPoolName={setPoolName}
         />
       </Modal.Body>
