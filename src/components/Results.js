@@ -16,7 +16,7 @@ export default function Results({
   times,
   songIndex,
   userAnswers,
-  searchResults,
+  pool,
 }) {
   const winQuotes = ["You won!"];
   const loseQuotes = ["You lost.", "Better luck next time.", "So close."];
@@ -29,7 +29,7 @@ export default function Results({
       <div
         id="album-cover"
         style={{
-          backgroundImage: `url(${searchResults[songIndex].albumUrlMed})`,
+          backgroundImage: `url(${pool[songIndex].albumUrlMed})`,
         }}
       />
       <h4>
@@ -37,11 +37,11 @@ export default function Results({
           ? winQuotes[Math.floor(Math.random() * winQuotes.length)]
           : loseQuotes[Math.floor(Math.random() * loseQuotes.length)]}
       </h4>
-      Title: {searchResults[songIndex].title}
+      Title: {pool[songIndex].title}
       <br />
-      Artist: {searchResults[songIndex].artists[0].name}
+      Artist: {pool[songIndex].artists[0].name}
       <br />
-      Album: {searchResults[songIndex].album}
+      Album: {pool[songIndex].album}
       <br />
       <div className="d-flex">
         {times.map((time, index) => {
@@ -53,7 +53,7 @@ export default function Results({
                   ? "empty"
                   : userAnswers[index] === "skip"
                   ? "skip"
-                  : userAnswers[index] === searchResults[songIndex].pattern
+                  : userAnswers[index] === pool[songIndex].pattern
                   ? "correct"
                   : "wrong"
               }

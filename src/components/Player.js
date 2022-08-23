@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import PlayerBar from "./PlayerBar";
 import PlayerButtons from "./PlayerButtons";
-import { strictRound } from "../utils";
 
 export default function Player({
   accessToken,
@@ -127,28 +126,27 @@ export default function Player({
 
   const [time, setTime] = useState(0);
 
-  const [isSyncing, setSyncing] = useState(false);
-
-  // sync every 5s with actual time
+  // sync every 10s with actual time
   useEffect(() => {
-    const strictRoundedTime = strictRound(time);
-    if (strictRoundedTime === 0) return;
-    if (strictRoundedTime % 10 === 0 && !isSyncing) {
-      setSyncing(true);
-      player.getCurrentState().then((state) => {
-        setTime(state.position / 1000);
-        setSyncing(false);
-      });
+    let syncInterval;
+    if (showAnswer && isPlaying) {
+      syncInterval = setInterval(() => {
+        player.getCurrentState().then((state) => {
+          setTime(state.position / 1000);
+        });
+      }, 10000);
     }
-  }, [player, time, isSyncing]);
+    return () => clearInterval(syncInterval);
+  }, [player, isPlaying, showAnswer]);
 
   // timer of song
   useEffect(() => {
     var timer;
+    const interval = 200;
     if (isPlaying)
       timer = setInterval(() => {
-        setTime((prevTime) => prevTime + 0.1);
-      }, 100);
+        setTime((prevTime) => prevTime + interval / 1000);
+      }, interval);
     else if (!isPlaying && (!showAnswer || Math.round(time) >= totalTime))
       setTime(0);
 
@@ -176,6 +174,9 @@ export default function Player({
         <PlayerBar
           time={time}
           totalTime={showAnswer ? totalTime : times[times.length - 1] + offset}
+          showAnswer={showAnswer}
+          times={times}
+          timeIndex={timeIndex}
         />
         <PlayerButtons
           disabled={!isActive}

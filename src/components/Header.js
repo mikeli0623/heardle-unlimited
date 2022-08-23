@@ -3,27 +3,50 @@ import ModeContext from "./ModeContext";
 import Nav from "react-bootstrap/Nav";
 import InfoModal from "./InfoModal";
 import StatsModal from "./StatsModal";
+import PoolModal from "./PoolModal";
 
-export default function Header({ setShowSettings, wins, fails, streak }) {
+export default function Header({
+  wins,
+  fails,
+  streak,
+  spotifyApi,
+  setPool,
+  savedPlaylists,
+  activeSavedPlaylist,
+  setActiveSavedPlaylist,
+  activeCountry,
+  setActiveCountry,
+  activeDecade,
+  setActiveDecade,
+  setPoolName,
+}) {
   const { mode } = useContext(ModeContext);
   const [showInfo, setShowInfo] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [showPool, setShowPool] = useState(false);
 
   useEffect(() => {
     if (mode !== "none") setShowInfo(true);
-  }, [mode, setShowInfo]);
+  }, [mode]);
 
   return (
     <Nav>
-      <a id="shameless-plug" href="https://github.com/hbhhi/music-thing">
-        <img width="32px" src="./assets/github.png" alt="github" />
+      <a
+        id="shameless-plug"
+        href="https://github.com/hbhhi/music-thing"
+        target="_blank"
+        rel="noreferrer"
+      >
+        <img width={32} src="./assets/github.png" alt="github" />
       </a>
       <img
         style={{ cursor: "pointer" }}
         width="32px"
         src="./assets/settings.svg"
         alt="settings"
-        onClick={() => setShowSettings(true)}
+        onClick={() => {
+          if (mode !== "none") setShowPool(true);
+        }}
       />
       <div id="logo" style={{ backgroundImage: "url(../assets/infinity.svg)" }}>
         HEARDLE UNLIMITED
@@ -31,7 +54,12 @@ export default function Header({ setShowSettings, wins, fails, streak }) {
       <div className="header-button" onClick={() => setShowInfo(true)}>
         ?
       </div>
-      <div className="header-button" onClick={() => setShowStats(true)}>
+      <div
+        className="header-button"
+        onClick={() => {
+          if (mode !== "none") setShowStats(true);
+        }}
+      >
         <div className="d-flex" style={{ transform: "scaleY(-1)" }}>
           <div
             style={{ height: "6px", width: "3px", backgroundColor: "white" }}
@@ -52,6 +80,20 @@ export default function Header({ setShowSettings, wins, fails, streak }) {
         wins={wins}
         fails={fails}
         streak={streak}
+      />
+      <PoolModal
+        show={showPool}
+        onHide={() => setShowPool(false)}
+        spotifyApi={spotifyApi}
+        setPool={setPool}
+        savedPlaylists={savedPlaylists}
+        activeSavedPlaylist={activeSavedPlaylist}
+        setActiveSavedPlaylist={setActiveSavedPlaylist}
+        activeCountry={activeCountry}
+        setActiveCountry={setActiveCountry}
+        activeDecade={activeDecade}
+        setActiveDecade={setActiveDecade}
+        setPoolName={setPoolName}
       />
     </Nav>
   );

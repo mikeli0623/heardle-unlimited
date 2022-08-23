@@ -28,7 +28,6 @@ body {
   font-size: 1.1rem;
   height: 32px;
   width: 32px;
-  user-select: none;
   cursor: pointer;
 }
 
@@ -45,7 +44,6 @@ body {
   font-weight: bold;
   text-align: center;
   font-size: 2rem;
-  user-select: none;
 }
 
 /* #main {
@@ -63,6 +61,7 @@ body {
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
+  user-select: none;
 }
 
 #player {
@@ -117,7 +116,6 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  user-select: none;
 }
 
 .next-icon {
@@ -131,7 +129,6 @@ body {
 
 .player-time {
   padding: 0 1%;
-  user-select: none;
 }
 
 #player-bar {
@@ -170,7 +167,6 @@ body {
   align-items: center;
   justify-content: left;
   padding-left: 10px;
-  user-select: none;
 }
 
 .guess-box.skip {
@@ -184,18 +180,25 @@ body {
   background-size: 300px 300px;
 }
 
-.bg-custom {
-  background-color: grey;
+.progress-bar.no-transition {
+  transition-duration: none;
 }
 
-.btn-custom {
-  background-color: grey;
-  color: white;
+.bg-custom {
+  background-color: rgb(153, 153, 153);
+}
+
+.bg-blocker {
+  background-color: rgb(83, 83, 83);
+
+  outline: 0.5px solid white;
+  outline-offset: -1px;
 }
 
 .modal-content {
-  background-color: rgb(22, 22, 22);
+  background-color: rgb(15, 15, 15);
   color: white;
+  border: 0.1rem solid rgb(31, 31, 31);
 }
 
 .modal-header {
@@ -229,7 +232,6 @@ body {
 #scorebar-container {
   max-height: 500px;
   max-width: 500px;
-  border: 1px solid grey;
 }
 
 .scorebar {

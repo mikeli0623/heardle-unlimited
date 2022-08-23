@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Modal, Button, Container } from "react-bootstrap";
 
 const ScoreBar = ({ subject, value, total, color = "white" }) => {
@@ -21,6 +22,12 @@ const ScoreBar = ({ subject, value, total, color = "white" }) => {
 };
 
 export default function StatsModal({ show, onHide, wins, fails, streak }) {
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    setTotal(wins.reduce((partialSum, a) => partialSum + a, 0) + fails);
+  }, [wins, fails]);
+
   return (
     <Modal
       size="lg"
@@ -47,18 +54,17 @@ export default function StatsModal({ show, onHide, wins, fails, streak }) {
                 key={win + index}
                 subject={index + 1}
                 value={win}
-                total={
-                  wins.reduce((partialSum, a) => partialSum + a, 0) + fails
-                }
+                total={total}
               />
             );
           })}
           <ScoreBar
             subject="X"
             value={fails}
-            total={wins.reduce((partialSum, a) => partialSum + a, 0) + fails}
+            total={total}
             color="rgb(210,0,0)"
           />
+          <div style={{ fontSize: "1.2rem" }}>Total: {total}</div>
           <div style={{ fontSize: "1.2rem" }}>Streak: {streak}</div>
         </Container>
       </Modal.Body>

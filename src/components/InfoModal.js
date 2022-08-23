@@ -1,5 +1,22 @@
 import { Modal, Button } from "react-bootstrap";
 
+const Rule = ({ icon, rule }) => {
+  return (
+    <div className="d-flex align-items-center justify-content-start my-2">
+      <figure className="m-0" style={{ height: "32px", width: "32px" }}>
+        <img
+          style={{ maxWidth: "100%" }}
+          src={`./assets/${icon}.png`}
+          alt={`${icon} icon`}
+        />
+      </figure>
+      <div className="mx-2" style={{ fontSize: "1.2rem" }}>
+        {rule}
+      </div>
+    </div>
+  );
+};
+
 export default function InfoModal({ show, onHide }) {
   return (
     <Modal
@@ -20,12 +37,26 @@ export default function InfoModal({ show, onHide }) {
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <h4>Centered Modal</h4>
-        <p>
-          Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
-          dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta ac
-          consectetur ac, vestibulum at eros.
-        </p>
+        <Rule
+          icon="spotify"
+          rule="Login to your Spotify account. Needs to be premium."
+        />
+        <Rule
+          icon="settings"
+          rule="Set your track pool with this icon (default Top 50 Tracks - Global)"
+        />
+        <Rule
+          icon="listen"
+          rule="Listen to the intro of the song and guess the right track."
+        />
+        <Rule
+          icon="surrender"
+          rule="Skips or incorrect guesses add time to the intro."
+        />
+        <Rule
+          icon="smile"
+          rule="Guess in as little attempts as possible and reach for a high streak. Enjoy!"
+        />
       </Modal.Body>
       <Modal.Footer
         style={{

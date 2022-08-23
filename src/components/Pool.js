@@ -2,12 +2,11 @@ import React, { useContext } from "react";
 import ModeContext from "./ModeContext";
 import { Button } from "react-bootstrap";
 import FilteredDropdown from "./FilteredDropdown";
-import { countryCodes, decadeCodes } from "./data";
+import { countryCodes, decadeCodes } from "../data";
 
-export default function Settings({
+export default function Pool({
   spotifyApi,
-  setSearchResults,
-  close,
+  setPool,
   savedPlaylists,
   activeSavedPlaylist,
   setActiveSavedPlaylist,
@@ -15,9 +14,12 @@ export default function Settings({
   setActiveCountry,
   activeDecade,
   setActiveDecade,
+  setPoolName,
 }) {
   const { mode } = useContext(ModeContext);
-  const chooseSavedTracks = async (spotifyApi, setSearchResults) => {
+
+  const chooseSavedTracks = async (spotifyApi) => {
+    setPoolName("My Saved Tracks");
     var offset = 0;
     var promises = [];
     while (offset < 200) {
@@ -28,7 +30,7 @@ export default function Settings({
     const responses = await Promise.all(promises);
     responses.map((res) => {
       if (res.body.items.length)
-        setSearchResults(
+        setPool(
           res.body.items.map((item) => {
             return {
               artists: item.track.artists,
@@ -54,10 +56,11 @@ export default function Settings({
     });
   };
 
-  const chooseNewReleases = (spotifyApi, setSearchResults) => {
+  const chooseNewReleases = (spotifyApi) => {
+    setPoolName("New Releases");
     spotifyApi.getNewReleases({ limit: 50 }).then(
       (res) => {
-        setSearchResults(
+        setPool(
           res.body.albums.items.map((item) => {
             return {
               artists: item.artists,
@@ -93,22 +96,24 @@ export default function Settings({
   };
 
   return (
-    <div className="flex-grow-1">
+    <div className="d-flex">
       <Button
+        className="m-1 btn-dark"
         disabled={mode === "guest"}
         onClick={() => {
-          chooseSavedTracks(spotifyApi, setSearchResults);
+          chooseSavedTracks(spotifyApi);
         }}
       >
         My Saved Tracks
       </Button>
-      <Button
+      {/* <Button
+        className="m-1 btn-dark"
         onClick={() => {
-          chooseNewReleases(spotifyApi, setSearchResults);
+          chooseNewReleases(spotifyApi);
         }}
       >
         New Releases
-      </Button>
+      </Button> */}
       <FilteredDropdown
         name="My Saved Playlists"
         list={Object.keys(savedPlaylists)}
@@ -131,9 +136,6 @@ export default function Settings({
         activeItem={activeCountry}
         setActiveItem={setActiveCountry}
       />
-      <Button className="btn-danger" onClick={close}>
-        Close
-      </Button>
     </div>
   );
 }

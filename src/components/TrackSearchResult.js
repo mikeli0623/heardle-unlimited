@@ -12,7 +12,7 @@ export default function TrackSearchResult({ track, chooseAnswer }) {
           height: "64px",
           width: "64px",
           backgroundSize: "64px 64px",
-          backgroundImage: `url(${track.albumUrlSmall})`,
+          backgroundImage: `url(${track.albumUrl})`,
         }}
       />
       <div className="m-2">

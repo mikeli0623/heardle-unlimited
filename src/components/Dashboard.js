@@ -1,25 +1,22 @@
-import { useState, useEffect, Fragment, useMemo, useContext } from "react";
-import ModeContext from "./ModeContext";
+import { useState, useEffect, Fragment, useMemo } from "react";
 import Player from "./Player";
 import TrackSearchResult from "./TrackSearchResult";
 import Results from "./Results";
 import GuessBoxes from "./GuessBoxes";
-import Settings from "./Settings";
+import NoPremiumModal from "./NoPremiumModal";
 import { Container, Form } from "react-bootstrap";
-import { matchSorter } from "match-sorter";
-import { countryCodes, decadeCodes } from "./data";
 
 export default function Dashboard({
+  isPremium,
   accessToken,
   spotifyApi,
-  showSettings,
-  setShowSettings,
-  username,
   setStreak,
   setFails,
   setWins,
+  pool,
+  setPool,
+  poolName,
 }) {
-  const { mode } = useContext(ModeContext);
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [playingTrack, setPlayingTrack] = useState();
@@ -31,26 +28,22 @@ export default function Dashboard({
   const [showAnswer, setShowAnswer] = useState(false);
   const times = useMemo(() => [1, 2, 4, 7, 11, 16], []);
 
-  const [activeSavedPlaylist, setActiveSavedPlaylist] = useState(null);
-  const [activeCountry, setActiveCountry] = useState("Global");
-  const [activeDecade, setActiveDecade] = useState(null);
-
   const handleAdd = () => {
-    if (searchResults.length && !showAnswer) {
+    if (pool.length && !showAnswer) {
       setTimeIndex((prevIndex) => prevIndex + 1);
       setUserAnswers([...userAnswers, "skip"]);
     }
   };
 
   const handleNext = () => {
-    if (searchResults.length === 0 || searchResults.length === 1) return;
+    if (pool.length === 0 || pool.length === 1) return;
     if (gameState !== "Won" && !showAnswer) {
       setStreak((prevStreak) => prevStreak - 1);
       setFails((prevFails) => prevFails + 1);
     }
-    let searchResultsClone = [...searchResults];
+    let searchResultsClone = [...pool];
     searchResultsClone.splice(songIndex, 1);
-    setSearchResults(searchResultsClone);
+    setPool(searchResultsClone);
     setGameState("thinking");
     setTimeIndex(0);
     setShowAnswer(false);
@@ -63,7 +56,7 @@ export default function Dashboard({
   // determines outcome of game based off user answer
   useEffect(() => {
     if (userAnswer) {
-      if (searchResults[songIndex] === userAnswer) {
+      if (pool[songIndex].pattern === userAnswer.pattern) {
         setGameState("Won");
         setStreak((prevStreak) => (prevStreak < 0 ? 1 : prevStreak + 1));
         setShowAnswer(true);
@@ -87,7 +80,7 @@ export default function Dashboard({
   }, [
     userAnswer,
     songIndex,
-    searchResults,
+    pool,
     times,
     timeIndex,
     setWins,
@@ -104,39 +97,7 @@ export default function Dashboard({
   const [beatOffset, setBeatOffset] = useState(0);
 
   useEffect(() => {
-    spotifyApi.getPlaylist("37i9dQZEVXbMDoHDwVN2tF").then(
-      (res) => {
-        setSearchResults(
-          res.body.tracks.items.map((item) => {
-            return {
-              artists: item.track.artists,
-              title: item.track.name,
-              pattern: (
-                item.track.artists.map((artist) => {
-                  return artist.name;
-                }) +
-                " - " +
-                item.track.name
-              ).replace(",", " "),
-              uri: item.track.uri,
-              id: item.track.id,
-              album: item.track.album.name,
-              albumUrlLarge: item.track.album.images[0].url,
-              albumUrlMed: item.track.album.images[1].url,
-              albumUrlSmall: item.track.album.images[2].url,
-              duration: Math.round(item.track.duration_ms / 1000),
-            };
-          })
-        );
-      },
-      (err) => {
-        console.log("Something went wrong!", err);
-      }
-    );
-  }, [spotifyApi]);
-
-  useEffect(() => {
-    if (searchResults.length) {
+    if (pool.length) {
       // soft reset
       setGameState("thinking");
       setTimeIndex(0);
@@ -146,9 +107,9 @@ export default function Dashboard({
       setSearch("");
       setBeatOffset(0);
 
-      const idx = Math.floor(Math.random() * searchResults.length);
+      const idx = Math.floor(Math.random() * pool.length);
       setSongIndex(idx);
-      const nextSong = searchResults[idx];
+      const nextSong = pool[idx];
       setPlayingTrack(nextSong);
       spotifyApi.getAudioAnalysisForTrack(nextSong.id).then(
         (res) => {
@@ -161,148 +122,49 @@ export default function Dashboard({
         }
       );
     }
-  }, [searchResults, spotifyApi]);
+  }, [pool, spotifyApi]);
 
-  const [savedPlaylists, setSavedPlaylists] = useState([]);
-
-  // grab user info
+  // grabs search results based off user search
   useEffect(() => {
-    if (username) {
-      spotifyApi.getUserPlaylists(username, { limit: 50 }).then(
-        (res) => {
-          let obj = {};
-          res.body.items.forEach((playlist) => (obj[playlist.name] = playlist));
-          setSavedPlaylists(obj);
-        },
-        (err) => {
-          console.log("Something went wrong!", err);
-        }
+    if (search.length < 2) return setSearchResults([]);
+    if (!accessToken) return;
+
+    let cancel = false;
+    spotifyApi.searchTracks(search).then((res) => {
+      if (cancel) return;
+      setSearchResults(
+        res.body.tracks.items.map((track) => {
+          return {
+            artists: track.artists,
+            pattern: (
+              track.artists.map((artist) => {
+                return artist.name;
+              }) +
+              " - " +
+              track.name
+            ).replace(",", " "),
+            title: track.name,
+            uri: track.uri,
+            albumUrl: track.album.images[2].url,
+          };
+        })
       );
-    }
-  }, [username, spotifyApi]);
+    });
 
-  useEffect(() => {
-    if (!activeCountry) return;
-    spotifyApi.getPlaylist(countryCodes[activeCountry]).then(
-      (res) => {
-        setSearchResults(
-          res.body.tracks.items.map((item) => {
-            return {
-              artists: item.track.artists,
-              title: item.track.name,
-              pattern: (
-                item.track.artists.map((artist) => {
-                  return artist.name;
-                }) +
-                " - " +
-                item.track.name
-              ).replace(",", " "),
-              uri: item.track.uri,
-              id: item.track.id,
-              album: item.track.album.name,
-              albumUrlLarge: item.track.album.images[0].url,
-              albumUrlMed: item.track.album.images[1].url,
-              albumUrlSmall: item.track.album.images[2].url,
-              duration: Math.round(item.track.duration_ms / 1000),
-            };
-          })
-        );
-      },
-      (err) => {
-        console.log("Something went wrong!", err);
-      }
-    );
-  }, [spotifyApi, activeCountry, setSearchResults]);
-
-  useEffect(() => {
-    if (!activeSavedPlaylist || mode === "guest") return;
-    spotifyApi.getPlaylist(savedPlaylists[activeSavedPlaylist].id).then(
-      (res) => {
-        setSearchResults(
-          res.body.tracks.items.map((item) => {
-            return {
-              artists: item.track.artists,
-              title: item.track.name,
-              pattern: (
-                item.track.artists.map((artist) => {
-                  return artist.name;
-                }) +
-                " - " +
-                item.track.name
-              ).replace(",", " "),
-              uri: item.track.uri,
-              id: item.track.id,
-              album: item.track.album.name,
-              albumUrlLarge: item.track.album.images[0].url,
-              albumUrlMed: item.track.album.images[1].url,
-              albumUrlSmall: item.track.album.images[2].url,
-              duration: Math.round(item.track.duration_ms / 1000),
-            };
-          })
-        );
-      },
-      (err) => {
-        console.log("Something went wrong!", err);
-      }
-    );
-  }, [spotifyApi, activeSavedPlaylist, setSearchResults, savedPlaylists, mode]);
-
-  useEffect(() => {
-    if (!activeDecade) return;
-    spotifyApi.getPlaylist(decadeCodes[activeDecade]).then(
-      (res) => {
-        setSearchResults(
-          res.body.tracks.items.map((item) => {
-            return {
-              artists: item.track.artists,
-              title: item.track.name,
-              pattern: (
-                item.track.artists.map((artist) => {
-                  return artist.name;
-                }) +
-                " - " +
-                item.track.name
-              ).replace(",", " "),
-              uri: item.track.uri,
-              id: item.track.id,
-              album: item.track.album.name,
-              albumUrlLarge: item.track.album.images[0].url,
-              albumUrlMed: item.track.album.images[1].url,
-              albumUrlSmall: item.track.album.images[2].url,
-              duration: Math.round(item.track.duration_ms / 1000),
-            };
-          })
-        );
-      },
-      (err) => {
-        console.log("Something went wrong!", err);
-      }
-    );
-  }, [spotifyApi, activeDecade, setSearchResults]);
+    return () => (cancel = true);
+  }, [search, accessToken, spotifyApi]);
 
   return (
     <Container id="dashboard">
-      {showSettings ? (
-        <Settings
-          spotifyApi={spotifyApi}
-          setSearchResults={setSearchResults}
-          close={() => setShowSettings(false)}
-          savedPlaylists={savedPlaylists}
-          activeSavedPlaylist={activeSavedPlaylist}
-          setActiveSavedPlaylist={setActiveSavedPlaylist}
-          activeCountry={activeCountry}
-          setActiveCountry={setActiveCountry}
-          activeDecade={activeDecade}
-          setActiveDecade={setActiveDecade}
-        />
-      ) : showAnswer ? (
+      Pool: {poolName}
+      {showAnswer ? (
         <Results
           gameState={gameState}
           userAnswers={userAnswers}
           times={times}
           timeIndex={timeIndex}
           songIndex={songIndex}
-          searchResults={searchResults}
+          pool={pool}
         />
       ) : (
         <Fragment>
@@ -313,24 +175,24 @@ export default function Dashboard({
           />
           <Form.Control
             type="search"
-            placeholder="Search Songs/Artists"
+            placeholder="Search for Track"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           <div
             className="flex-grow-1 my-2 overflow-auto"
-            style={{ height: "10vh" }}
+            style={{ height: "10vh", width: "100%" }}
           >
-            {search.length > 1 ? (
-              matchSorter(searchResults, search, { keys: ["pattern"] }).map(
-                (track) => (
+            {searchResults.length ? (
+              searchResults
+                .filter((track) => !userAnswers.includes(track.pattern))
+                .map((track) => (
                   <TrackSearchResult
                     track={track}
                     key={track.uri}
                     chooseAnswer={setUserAnswer}
                   />
-                )
-              )
+                ))
             ) : (
               <></>
             )}
@@ -349,12 +211,13 @@ export default function Dashboard({
             ? playingTrack.duration
             : times[timeIndex] + Math.round(beatOffset)
         }
-        timeIndex={timeIndex}
         times={times}
+        timeIndex={timeIndex}
         handleShowAnswer={handleShowAnswer}
         handleAdd={handleAdd}
         handleNext={handleNext}
       />
+      <NoPremiumModal show={!isPremium} />
     </Container>
   );
 }

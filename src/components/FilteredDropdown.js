@@ -42,7 +42,9 @@ export default function FilteredDropdown({
 }) {
   return (
     <Dropdown>
-      <Dropdown.Toggle>{name}</Dropdown.Toggle>
+      <Dropdown.Toggle className="m-1" variant="dark">
+        {name}
+      </Dropdown.Toggle>
       <Dropdown.Menu as={CustomMenu} variant="dark">
         {list.map((item, index) => {
           return (
