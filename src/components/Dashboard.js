@@ -62,6 +62,7 @@ export default function Dashboard({
           winsClone[timeIndex]++;
           return [...winsClone];
         });
+        setTimeIndex(times.length - 1);
       } else if (timeIndex === times.length - 1) {
         setStreak((prevStreak) => (prevStreak > 0 ? 0 : prevStreak - 1));
         setShowAnswer(true);
