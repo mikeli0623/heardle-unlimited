@@ -5,3 +5,10 @@ A front-end project that lets you play Heardle as much as you want (kind of). Ne
 ## Check it Out Here
 
 https://heardle-unlimited.herokuapp.com/
+
+## Supported Browsers
+- Chrome
+- Firefox
+- Safari
+- Microsoft Edge
+- IE11
