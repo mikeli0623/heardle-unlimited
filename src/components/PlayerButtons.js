@@ -1,26 +1,3 @@
-const PlayerIcon = ({
-  height,
-  width,
-  action,
-  onClick,
-  backgroundWidth = width,
-}) => {
-  return (
-    <div
-      className="player-icon"
-      style={{
-        height: height,
-        width: width,
-        backgroundSize: `${backgroundWidth}px ${height}px`,
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
-        backgroundImage: `url(../assets/${action}.png`,
-      }}
-      onClick={onClick}
-    />
-  );
-};
-
 export default function PlayerButtons({
   disabled,
   accessToken,
@@ -29,28 +6,44 @@ export default function PlayerButtons({
   isFirstPlay,
   isPlaying,
   surrender,
+  freePlay,
   addedTime,
-  handleShowAnswer,
-  handleAdd,
-  handleNext,
+  handleLeft,
+  handleRight,
 }) {
   return (
     <div id="player-buttons-container">
-      {surrender ? (
-        <PlayerIcon
-          height={32}
-          backgroundWidth={32}
-          width={55}
-          action={"surrender"}
+      {freePlay ? (
+        <div
+          className="d-flex justify-content-center align-items-center chevron-container"
+          style={{
+            rotate: "180deg",
+          }}
+        >
+          <div
+            className="player-icon chevron-icon"
+            onClick={() => {
+              if (!disabled) {
+                handleLeft();
+              }
+            }}
+          />
+        </div>
+      ) : surrender ? (
+        <div
+          className="player-icon"
+          style={{
+            backgroundImage: "url(../assets/surrender.png",
+          }}
           onClick={() => {
-            if (!disabled) handleShowAnswer();
+            if (!disabled) handleLeft();
           }}
         />
       ) : (
         <div
           className="player-icon add-time-icon"
           onClick={() => {
-            if (!disabled) handleAdd();
+            if (!disabled) handleLeft();
           }}
         >
           +{addedTime}s
@@ -72,20 +65,13 @@ export default function PlayerButtons({
           }
         }}
       />
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{
-          height: "32px",
-          width: "55px",
-          margin: "auto",
-        }}
-      >
+      <div className="d-flex justify-content-center align-items-center chevron-container">
         <div
-          className="player-icon next-icon"
+          className="player-icon chevron-icon"
           onClick={() => {
             if (!disabled) {
               player.pause();
-              handleNext();
+              handleRight();
             }
           }}
         />

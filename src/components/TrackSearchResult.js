@@ -9,13 +9,13 @@ export default function TrackSearchResult({ track, chooseAnswer }) {
     >
       <div
         style={{
-          height: "64px",
-          width: "64px",
-          backgroundSize: "64px 64px",
+          height: "48px",
+          width: "48px",
+          backgroundSize: "48px 48px",
           backgroundImage: `url(${track.albumUrl})`,
         }}
       />
-      <div className="m-2">
+      <div className="m-1">
         {track.title}
         <div className="text-muted">
           {track.artists.map((artist, index) => {

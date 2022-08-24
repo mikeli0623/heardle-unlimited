@@ -45,7 +45,7 @@ export default function Pool({
               albumUrlLarge: item.track.album.images[0].url,
               albumUrlMed: item.track.album.images[1].url,
               albumUrlSmall: item.track.album.images[2].url,
-              duration: Math.round(item.track.duration_ms / 1000),
+              duration_ms: item.track.duration_ms,
             };
           })
         );
@@ -75,7 +75,7 @@ export default function Pool({
   //             albumUrlLarge: item.images[0].url,
   //             albumUrlMed: item.images[1].url,
   //             albumUrlSmall: item.images[2].url,
-  //             duration: Math.round(item.duration_ms / 1000),
+  //             duration_ms: item.duration_ms,
   //           };
   //         })
   //       );

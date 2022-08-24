@@ -4,10 +4,9 @@ import PlayerButtons from "./PlayerButtons";
 
 export default function Player({
   accessToken,
-  trackUri,
+  track,
   timeValue,
   spotifyApi,
-  totalTime,
   showAnswer,
   offset,
   timeIndex,
@@ -43,7 +42,7 @@ export default function Player({
         setDeviceId(device_id);
       });
 
-      player.addListener("not_ready", ({ device_id }) => {
+      player.addListener("not_ready", () => {
         setDeviceId(undefined);
       });
 
@@ -80,7 +79,7 @@ export default function Player({
   const playFirstTrack = () => {
     spotifyApi
       .play({
-        uris: [trackUri],
+        uris: [track.uri],
       })
       .then(
         () => {
@@ -96,7 +95,7 @@ export default function Player({
   // if the track uri changes, reset first play state
   useEffect(() => {
     setFirstPlay(true);
-  }, [trackUri]);
+  }, [track]);
 
   useEffect(() => {
     if (!accessToken || showAnswer || !isActive || isFirstPlay) return;
@@ -147,11 +146,14 @@ export default function Player({
       timer = setInterval(() => {
         setTime((prevTime) => prevTime + interval / 1000);
       }, interval);
-    else if (!isPlaying && (!showAnswer || Math.round(time) >= totalTime))
+    else if (
+      !isPlaying &&
+      (!showAnswer || Math.ceil(time) >= Math.round(track.duration_ms / 1000))
+    )
       setTime(0);
 
     return () => clearInterval(timer);
-  }, [isPlaying, showAnswer, time, totalTime]);
+  }, [isPlaying, showAnswer, time, track]);
 
   // seeks to start of track when time is added
   useEffect(() => {
@@ -168,15 +170,40 @@ export default function Player({
     isFirstPlay,
   ]);
 
+  const [seekRatio, setSeekRatio] = useState(null);
+  const [isSeeking, setSeeking] = useState(false);
+
+  useEffect(() => {
+    if (!showAnswer || seekRatio === null || !isSeeking || !track) return;
+    setPlaying(false);
+    const newTime =
+      seekRatio > 0.985 ? track.duration_ms : track.duration_ms * seekRatio;
+    setTime(newTime / 1000);
+    player.seek(Math.floor(newTime));
+    setSeeking(false);
+  }, [player, seekRatio, showAnswer, isSeeking, track]);
+
+  const handleReset = () => {
+    setTime(0);
+    player.seek(0);
+  };
+
   if (accessToken)
     return (
       <div id="player">
         <PlayerBar
           time={time}
-          totalTime={showAnswer ? totalTime : times[times.length - 1] + offset}
+          totalTime={
+            showAnswer
+              ? Math.round(track.duration_ms / 1000)
+              : times[times.length - 1] + offset
+          }
           times={times}
           timeIndex={timeIndex}
           offset={offset}
+          showAnswer={showAnswer}
+          setSeekRatio={setSeekRatio}
+          setSeeking={setSeeking}
         />
         <PlayerButtons
           disabled={!isActive}
@@ -187,9 +214,15 @@ export default function Player({
           isPlaying={isPlaying}
           addedTime={times[timeIndex + 1] - times[timeIndex]}
           surrender={timeIndex + 1 === times.length}
-          handleShowAnswer={handleShowAnswer}
-          handleAdd={handleAdd}
-          handleNext={handleNext}
+          freePlay={showAnswer}
+          handleLeft={
+            showAnswer
+              ? handleReset
+              : timeIndex + 1 === times.length
+              ? handleShowAnswer
+              : handleAdd
+          }
+          handleRight={showAnswer ? handleNext : handleShowAnswer}
         />
       </div>
     );

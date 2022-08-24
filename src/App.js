@@ -67,43 +67,8 @@ const App = () => {
 
   useEffect(() => {
     if (!activePool) return;
-    // var offset = 0;
-    // var promises = [];
-    // while (offset < 200) {
-    //   promises.push(spotifyApi.getMySavedTracks({ limit: 50, offset: offset }));
-    //   offset += 50;
-    // }
-
-    // const responses = await Promise.all(promises);
-    // responses.map((res) => {
-    //   if (res.body.items.length)
-    //     setPool(
-    //       res.body.items.map((item) => {
-    //         return {
-    //           artists: item.track.artists,
-    //           title: item.track.name,
-    //           pattern: (
-    //             item.track.artists.map((artist) => {
-    //               return artist.name;
-    //             }) +
-    //             " - " +
-    //             item.track.name
-    //           ).replace(",", " "),
-    //           uri: item.track.uri,
-    //           id: item.track.id,
-    //           album: item.track.album.name,
-    //           albumUrlLarge: item.track.album.images[0].url,
-    //           albumUrlMed: item.track.album.images[1].url,
-    //           albumUrlSmall: item.track.album.images[2].url,
-    //           duration: Math.round(item.track.duration_ms / 1000),
-    //         };
-    //       })
-    //     );
-    //   return res;
-    // });
     spotifyApi.getPlaylist(activePool.value).then(
       (res) => {
-        console.log(res.body);
         setPool(
           res.body.tracks.items.map((item) => {
             return {
@@ -122,7 +87,7 @@ const App = () => {
               albumUrlLarge: item.track.album.images[0].url,
               albumUrlMed: item.track.album.images[1].url,
               albumUrlSmall: item.track.album.images[2].url,
-              duration: Math.round(item.track.duration_ms / 1000),
+              duration_ms: item.track.duration_ms,
             };
           })
         );

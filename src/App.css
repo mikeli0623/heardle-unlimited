@@ -13,7 +13,7 @@ body {
   width: 100vw;
   justify-content: space-evenly;
   align-items: center;
-  padding: 0.5rem 0;
+  padding: 0.3rem 0;
   border-bottom: 1px solid grey;
   user-select: none;
 }
@@ -32,9 +32,9 @@ body {
 }
 
 #logo {
-  height: 80px;
-  width: 180px;
-  background-size: 180px 80px;
+  height: 70px;
+  width: 170px;
+  background-size: 170px 70px;
   background-position: center;
   background-repeat: no-repeat;
   margin: 0 1%;
@@ -43,19 +43,12 @@ body {
   align-items: center;
   font-weight: bold;
   text-align: center;
-  font-size: 2rem;
+  font-size: 1.8rem;
+  line-height: 2rem;
 }
 
-/* #main {
-  min-height: calc(100vh - 110px);
-  max-width: 600px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-} */
-
 #dashboard {
-  min-height: calc(100vh - 110px);
+  min-height: calc(100vh - 100px);
   max-width: 600px;
   display: flex;
   flex-direction: column;
@@ -96,6 +89,11 @@ body {
 .player-icon {
   margin: auto;
   cursor: pointer;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 32px;
+  width: 32px;
+  background-size: 32px 32px;
 }
 
 .player-icon:active {
@@ -103,7 +101,7 @@ body {
   transition-duration: 0.15s;
 }
 
-.player-icon.next-icon:active {
+.player-icon.chevron-icon:active {
   transform: scale(0.9) rotate(45deg) translate(-4px, 4px);
   transition-duration: 0.15s;
 }
@@ -118,7 +116,13 @@ body {
   align-items: center;
 }
 
-.next-icon {
+.chevron-container {
+  height: 32px;
+  width: 55px;
+  margin: auto;
+}
+
+.chevron-icon {
   height: 22px;
   width: 22px;
   border-top: 5px solid white;
@@ -151,6 +155,10 @@ body {
   }
 }
 
+.info-text {
+  font-size: 2vh;
+}
+
 #guess-boxes {
   margin: 1% 0;
   padding: 0;
@@ -158,7 +166,7 @@ body {
 }
 
 .guess-box {
-  height: 40px;
+  height: 5vh;
   margin: 0.5rem;
   border: 1px solid grey;
   text-align: left;
@@ -175,9 +183,16 @@ body {
 
 #album-cover {
   margin: 5px;
-  height: 300px;
-  width: 300px;
-  background-size: 300px 300px;
+  height: 230px;
+  width: 230px;
+  background-size: 230px 230px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.progress {
+  height: 12px;
+  width: 100%;
 }
 
 .progress-bar.no-transition {

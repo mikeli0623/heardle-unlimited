@@ -62,7 +62,6 @@ export default function Dashboard({
           winsClone[timeIndex]++;
           return [...winsClone];
         });
-        setTimeIndex(times.length - 1);
       } else if (timeIndex === times.length - 1) {
         setStreak((prevStreak) => (prevStreak > 0 ? 0 : prevStreak - 1));
         setShowAnswer(true);
@@ -87,6 +86,7 @@ export default function Dashboard({
 
   const handleShowAnswer = () => {
     if (showAnswer) return;
+    setTimeIndex(times.length - 1);
     setShowAnswer(true);
     setUserAnswer("_");
   };
@@ -152,8 +152,8 @@ export default function Dashboard({
 
   return (
     <Container id="dashboard">
-      <div className="my-1">Pool: {poolName}</div>
-      <div>Tracks Remaining: {pool.length}</div>
+      <div className="my-1 info-text">Pool: {poolName}</div>
+      <div className="info-text">Tracks Remaining: {pool.length}</div>
       {showAnswer ? (
         <Results
           won={userAnswer === pool[trackIndex].pattern}
@@ -198,16 +198,12 @@ export default function Dashboard({
       )}
       <Player
         accessToken={accessToken}
-        trackUri={playingTrack?.uri}
+        track={playingTrack}
         timeValue={times[timeIndex]}
         spotifyApi={spotifyApi}
         offset={beatOffset}
         showAnswer={showAnswer}
-        totalTime={
-          showAnswer
-            ? playingTrack.duration
-            : times[timeIndex] + Math.round(beatOffset)
-        }
+        totalTime={times[timeIndex] + Math.round(beatOffset)}
         times={times}
         timeIndex={timeIndex}
         handleShowAnswer={handleShowAnswer}
