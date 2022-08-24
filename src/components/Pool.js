@@ -127,7 +127,7 @@ export default function Pool({
   return (
     <div className="d-flex flex-column">
       <Button
-        className="mx-1 btn-dark"
+        className="m-1 btn-dark"
         disabled={mode === "guest"}
         onClick={() => {
           chooseSavedTracks(spotifyApi);
