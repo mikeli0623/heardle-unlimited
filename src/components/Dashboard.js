@@ -55,6 +55,7 @@ export default function Dashboard({
   useEffect(() => {
     if (userAnswer) {
       if (userAnswer === pool[trackIndex].pattern) {
+        setTimeIndex(times.length - 1);
         setStreak((prevStreak) => (prevStreak < 0 ? 1 : prevStreak + 1));
         setShowAnswer(true);
         setWins((prevWins) => {
