@@ -206,10 +206,8 @@ export default function Dashboard({
 
   return (
     <Container id="dashboard">
-      {mode === "premium" && (
-        <div className="my-1 info-text">Pool: {poolName}</div>
-      )}
-      <div className="my-1 info-text">Tracks Remaining: {pool.length}</div>
+      <div className="my-1 info-text">Pool: {poolName}</div>
+      <div className="info-text">Tracks Remaining: {pool.length}</div>
       {showAnswer ? (
         <Results
           won={userAnswer === pool[trackIndex].pattern}

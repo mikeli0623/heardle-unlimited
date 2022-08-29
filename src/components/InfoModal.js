@@ -44,7 +44,7 @@ export default function InfoModal({ show, onHide }) {
           />
           <Rule
             icon="settings"
-            rule="Set your track pool with this icon (default Top 50 Tracks - Global)"
+            rule="Set your track pool with this icon (default Top 50 Tracks - Global if using Spotify)"
           />
           <Rule
             icon="listen"

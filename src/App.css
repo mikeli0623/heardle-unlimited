@@ -256,9 +256,11 @@ body {
 }
 
 #continue-guest-text {
+  font-size: 1.2rem;
   color: rgb(199, 199, 199);
   cursor: pointer;
   user-select: none;
+  transition: 0.2s;
 }
 
 #continue-guest-text:hover {

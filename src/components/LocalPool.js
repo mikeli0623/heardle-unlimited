@@ -11,15 +11,16 @@ export default function LocalPool({
   metadataLoaded,
   setMetadataLoaded,
   totalFiles,
+  setPoolName,
 }) {
   const handleUpload = async (e) => {
-    console.log(e.target.files);
     setMetadataList([]);
     setAudioFileList([]);
     setPool([]);
     setAllFiles([]);
     setMetadataLoaded(0);
     if (e.target.files.length !== 0) {
+      setPoolName(e.target.files[0].webkitRelativePath.split("/")[0]);
       const files = [...e.target.files].filter(
         (file) => file.type === "audio/mpeg"
       );

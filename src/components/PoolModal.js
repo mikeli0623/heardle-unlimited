@@ -62,6 +62,7 @@ export default function PoolModal({
             metadataLoaded={metadataLoaded}
             setMetadataLoaded={setMetadataLoaded}
             totalFiles={totalFiles}
+            setPoolName={setPoolName}
           />
         )}
       </Modal.Body>
