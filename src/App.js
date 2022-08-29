@@ -25,7 +25,11 @@ const App = () => {
   const [activePool, setActivePool] = useState(null);
   const [savedPlaylists, setSavedPlaylists] = useState([]);
   const [poolName, setPoolName] = useState(null);
-  const [isPremium, setPremium] = useState(false);
+  const [allFiles, setAllFiles] = useState([]);
+  const [audioFileList, setAudioFileList] = useState([]);
+  const [metadataList, setMetadataList] = useState([]);
+  const [isMetadataLoading, setMetadataLoading] = useState(false);
+  const [metadataLoaded, setMetadataLoaded] = useState(0);
 
   const accessToken = useAuth(code);
 
@@ -34,9 +38,8 @@ const App = () => {
     spotifyApi.setAccessToken(accessToken);
     spotifyApi.getMe().then((res) => {
       setUsername(res.body.id);
-      setPremium(res.body.product === "premium");
+      setMode(res.body.product === "premium" ? "premium" : "free");
     });
-    setMode("signed");
   }, [accessToken]);
 
   // grab users personal playlists
@@ -84,9 +87,7 @@ const App = () => {
               uri: item.track.uri,
               id: item.track.id,
               album: item.track.album.name,
-              albumUrlLarge: item.track.album.images[0].url,
-              albumUrlMed: item.track.album.images[1].url,
-              albumUrlSmall: item.track.album.images[2].url,
+              albumUrl: item.track.album.images[1].url,
               duration_ms: item.track.duration_ms,
             };
           })
@@ -111,12 +112,19 @@ const App = () => {
           activePool={activePool}
           setActivePool={setActivePool}
           setPoolName={setPoolName}
+          setMetadataList={setMetadataList}
+          setAudioFileList={setAudioFileList}
+          setAllFiles={setAllFiles}
+          isMetadataLoading={isMetadataLoading}
+          setMetadataLoading={setMetadataLoading}
+          metadataLoaded={metadataLoaded}
+          setMetadataLoaded={setMetadataLoaded}
+          totalFiles={audioFileList.length}
         />
         {mode === "none" ? (
           <Login />
         ) : (
           <Dashboard
-            isPremium={isPremium}
             accessToken={accessToken}
             spotifyApi={spotifyApi}
             setStreak={setStreak}
@@ -125,6 +133,11 @@ const App = () => {
             poolName={poolName}
             pool={pool}
             setPool={setPool}
+            audioFileList={audioFileList}
+            setAudioFileList={setAudioFileList}
+            metadataList={metadataList}
+            setMetadataList={setMetadataList}
+            allFiles={allFiles}
           />
         )}
       </ModeContext.Provider>

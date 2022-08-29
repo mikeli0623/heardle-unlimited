@@ -23,7 +23,7 @@ export default function Results({ won, times, trackIndex, userAnswers, pool }) {
       <div
         id="album-cover"
         style={{
-          backgroundImage: `url(${pool[trackIndex].albumUrlMed})`,
+          backgroundImage: `url(${pool[trackIndex].albumUrl})`,
         }}
       />
       <h4>

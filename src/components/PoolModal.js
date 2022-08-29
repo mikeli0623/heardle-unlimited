@@ -1,5 +1,8 @@
+import { useContext } from "react";
+import ModeContext from "./ModeContext";
 import { Modal, Button } from "react-bootstrap";
-import Pool from "./Pool";
+import SpotifyPool from "./SpotifyPool";
+import LocalPool from "./LocalPool";
 
 export default function PoolModal({
   show,
@@ -10,7 +13,16 @@ export default function PoolModal({
   savedPlaylists,
   activePool,
   setActivePool,
+  setMetadataList,
+  setAudioFileList,
+  setAllFiles,
+  isMetadataLoading,
+  setMetadataLoading,
+  metadataLoaded,
+  setMetadataLoaded,
+  totalFiles,
 }) {
+  const { mode } = useContext(ModeContext);
   return (
     <Modal
       size="lg"
@@ -30,14 +42,28 @@ export default function PoolModal({
         </Modal.Title>
       </Modal.Header>
       <Modal.Body className="d-flex justify-content-center">
-        <Pool
-          spotifyApi={spotifyApi}
-          setPool={setPool}
-          savedPlaylists={savedPlaylists}
-          activePool={activePool}
-          setActivePool={setActivePool}
-          setPoolName={setPoolName}
-        />
+        {mode === "premium" ? (
+          <SpotifyPool
+            spotifyApi={spotifyApi}
+            setPool={setPool}
+            savedPlaylists={savedPlaylists}
+            activePool={activePool}
+            setActivePool={setActivePool}
+            setPoolName={setPoolName}
+          />
+        ) : (
+          <LocalPool
+            setPool={setPool}
+            setMetadataList={setMetadataList}
+            setAudioFileList={setAudioFileList}
+            setAllFiles={setAllFiles}
+            isMetadataLoading={isMetadataLoading}
+            setMetadataLoading={setMetadataLoading}
+            metadataLoaded={metadataLoaded}
+            setMetadataLoaded={setMetadataLoaded}
+            totalFiles={totalFiles}
+          />
+        )}
       </Modal.Body>
       <Modal.Footer
         style={{
