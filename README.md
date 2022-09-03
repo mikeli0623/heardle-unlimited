@@ -6,7 +6,7 @@ A front-end project that lets you play Heardle as much as you want (kind of). Ne
 
 https://heardle-unlimited.herokuapp.com/*
 
-\*Note: A prompt will show up saying you don't have a Premium account even if you have one. New users must be manually whitelisted to use the app properly.
+\*Note: A prompt will show up saying you don't have a Premium account even if you have one. New users must be manually whitelisted to use the app properly with Spotify.
 
 ## Supported Browsers
 - Chrome
