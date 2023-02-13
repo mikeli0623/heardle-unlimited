@@ -22,30 +22,30 @@ export default function SpotifyPool({
     }
 
     const responses = await Promise.all(promises);
+    let pool = [];
     responses.map((res) => {
       if (res.body.items.length)
-        setPool(
-          res.body.items.map((item) => {
-            return {
-              artists: item.track.artists,
-              title: item.track.name,
-              pattern: (
-                item.track.artists.map((artist) => {
-                  return artist.name;
-                }) +
-                " - " +
-                item.track.name
-              ).replace(",", " "),
-              uri: item.track.uri,
-              id: item.track.id,
-              album: item.track.album.name,
-              albumUrl: item.track.album.images[1].url,
-              duration_ms: item.track.duration_ms,
-            };
+        res.body.items.map((item) =>
+          pool.push({
+            artists: item.track.artists,
+            title: item.track.name,
+            pattern: (
+              item.track.artists.map((artist) => {
+                return artist.name;
+              }) +
+              " - " +
+              item.track.name
+            ).replace(",", " "),
+            uri: item.track.uri,
+            id: item.track.id,
+            album: item.track.album.name,
+            albumUrl: item.track.album.images[1].url,
+            duration_ms: item.track.duration_ms,
           })
         );
       return res;
     });
+    setPool(pool);
   };
 
   const containsOption = (options, compare) => {
