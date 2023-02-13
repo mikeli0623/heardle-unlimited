@@ -51,5 +51,5 @@ export const decadeOptions = [
   { label: "2000s", value: "37i9dQZF1DX4o1oenSJRJd" },
 ];
 
-export const HOST_URL = "http://localhost:3000";
-export const SERVER_URL = "http://localhost:3001";
+export const HOST_URL = process.env.URL || "http://localhost:3000";
+export const SERVER_URL = process.env.URL || "http://localhost:3001";
