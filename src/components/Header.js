@@ -15,6 +15,14 @@ export default function Header({
   activePool,
   setActivePool,
   setPoolName,
+  setMetadataList,
+  setAudioFileList,
+  setAllFiles,
+  isMetadataLoading,
+  setMetadataLoading,
+  metadataLoaded,
+  setMetadataLoaded,
+  totalFiles,
 }) {
   const { mode } = useContext(ModeContext);
   const [showInfo, setShowInfo] = useState(false);
@@ -86,6 +94,14 @@ export default function Header({
         activePool={activePool}
         setActivePool={setActivePool}
         setPoolName={setPoolName}
+        setMetadataList={setMetadataList}
+        setAudioFileList={setAudioFileList}
+        setAllFiles={setAllFiles}
+        isMetadataLoading={isMetadataLoading}
+        setMetadataLoading={setMetadataLoading}
+        metadataLoaded={metadataLoaded}
+        setMetadataLoaded={setMetadataLoaded}
+        totalFiles={totalFiles}
       />
     </Nav>
   );

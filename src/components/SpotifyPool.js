@@ -1,10 +1,9 @@
-import React, { useContext } from "react";
-import ModeContext from "./ModeContext";
+import React from "react";
 import { Button } from "react-bootstrap";
 import { countryOptions, decadeOptions } from "../data";
 import Select from "react-select";
 
-export default function Pool({
+export default function SpotifyPool({
   spotifyApi,
   setPool,
   savedPlaylists,
@@ -12,8 +11,6 @@ export default function Pool({
   setActivePool,
   setPoolName,
 }) {
-  const { mode } = useContext(ModeContext);
-
   const chooseSavedTracks = async (spotifyApi) => {
     setPoolName("My Saved Tracks");
     setActivePool(null);
@@ -25,66 +22,31 @@ export default function Pool({
     }
 
     const responses = await Promise.all(promises);
+    let pool = [];
     responses.map((res) => {
       if (res.body.items.length)
-        setPool(
-          res.body.items.map((item) => {
-            return {
-              artists: item.track.artists,
-              title: item.track.name,
-              pattern: (
-                item.track.artists.map((artist) => {
-                  return artist.name;
-                }) +
-                " - " +
-                item.track.name
-              ).replace(",", " "),
-              uri: item.track.uri,
-              id: item.track.id,
-              album: item.track.album.name,
-              albumUrlLarge: item.track.album.images[0].url,
-              albumUrlMed: item.track.album.images[1].url,
-              albumUrlSmall: item.track.album.images[2].url,
-              duration_ms: item.track.duration_ms,
-            };
+        res.body.items.map((item) =>
+          pool.push({
+            artists: item.track.artists,
+            title: item.track.name,
+            pattern: (
+              item.track.artists.map((artist) => {
+                return artist.name;
+              }) +
+              " - " +
+              item.track.name
+            ).replace(",", " "),
+            uri: item.track.uri,
+            id: item.track.id,
+            album: item.track.album.name,
+            albumUrl: item.track.album.images[1].url,
+            duration_ms: item.track.duration_ms,
           })
         );
       return res;
     });
+    setPool(pool);
   };
-
-  // const chooseNewReleases = (spotifyApi) => {
-  //   setPoolName("New Releases");
-  //   spotifyApi.getNewReleases({ limit: 50 }).then(
-  //     (res) => {
-  //       setPool(
-  //         res.body.albums.items.map((item) => {
-  //           return {
-  //             artists: item.artists,
-  //             title: item.name,
-  //             pattern: (
-  //               item.artists.map((artist) => {
-  //                 return artist.name;
-  //               }) +
-  //               " - " +
-  //               item.name
-  //             ).replace(",", " "),
-  //             uri: item.uri,
-  //             id: item.id,
-  //             album: item.name,
-  //             albumUrlLarge: item.images[0].url,
-  //             albumUrlMed: item.images[1].url,
-  //             albumUrlSmall: item.images[2].url,
-  //             duration_ms: item.duration_ms,
-  //           };
-  //         })
-  //       );
-  //     },
-  //     (err) => {
-  //       console.log("Something went wrong!", err);
-  //     }
-  //   );
-  // };
 
   const containsOption = (options, compare) => {
     if (compare)
@@ -128,21 +90,12 @@ export default function Pool({
     <div className="d-flex flex-column">
       <Button
         className="m-1 btn-dark"
-        disabled={mode === "guest"}
         onClick={() => {
           chooseSavedTracks(spotifyApi);
         }}
       >
         My Saved Tracks
       </Button>
-      {/* <Button
-        className="m-1 btn-dark"
-        onClick={() => {
-          chooseNewReleases(spotifyApi);
-        }}
-      >
-        New Releases
-      </Button> */}
       <Select
         className="m-1"
         options={savedPlaylists}

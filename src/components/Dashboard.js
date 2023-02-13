@@ -1,13 +1,14 @@
-import { useState, useEffect, Fragment, useMemo } from "react";
+import { useState, useEffect, Fragment, useMemo, useContext } from "react";
+import ModeContext from "./ModeContext";
 import Player from "./Player";
 import TrackSearchResult from "./TrackSearchResult";
 import Results from "./Results";
 import GuessBoxes from "./GuessBoxes";
 import NoPremiumModal from "./NoPremiumModal";
+import { matchSorter } from "match-sorter";
 import { Container, Form } from "react-bootstrap";
 
 export default function Dashboard({
-  isPremium,
   accessToken,
   spotifyApi,
   setStreak,
@@ -16,16 +17,47 @@ export default function Dashboard({
   pool,
   setPool,
   poolName,
+  allFiles,
+  audioFileList,
+  setAudioFileList,
+  metadataList,
+  setMetadataList,
 }) {
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [playingTrack, setPlayingTrack] = useState();
-  const [trackIndex, setTrackIndex] = useState();
+  const [playingTrack, setPlayingTrack] = useState(null);
+  const [trackIndex, setTrackIndex] = useState(undefined);
   const [userAnswers, setUserAnswers] = useState([]);
   const [userAnswer, setUserAnswer] = useState(null);
   const [timeIndex, setTimeIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [audio, setAudio] = useState(null);
+
   const times = useMemo(() => [1, 2, 4, 7, 11, 16], []);
+
+  const { mode } = useContext(ModeContext);
+
+  useEffect(() => {
+    if (audioFileList.length && pool.length) {
+      const idx = Math.floor(Math.random() * audioFileList.length);
+      setTrackIndex(idx);
+      const nextSong = audioFileList[idx];
+      setPlayingTrack(pool[idx]);
+      setAudio(new Audio(URL.createObjectURL(nextSong)));
+    }
+  }, [audioFileList, pool]);
+
+  // user search local
+  useEffect(() => {
+    if (mode !== "local") return;
+    if (search.length > 1)
+      setSearchResults(
+        matchSorter(allFiles, search, { keys: ["pattern"] }).filter(
+          (track) => !userAnswers.includes(track.pattern)
+        )
+      );
+    else setSearchResults([]);
+  }, [search, allFiles, mode, userAnswers]);
 
   const handleAdd = () => {
     if (pool.length && !showAnswer) {
@@ -35,20 +67,39 @@ export default function Dashboard({
   };
 
   const handleNext = () => {
-    if (pool.length === 0 || pool.length === 1) return;
-    if (!showAnswer) {
-      setStreak((prevStreak) => prevStreak - 1);
-      setFails((prevFails) => prevFails + 1);
+    if (mode === "premium") {
+      if (pool.length === 0 || pool.length === 1) return;
+      if (!showAnswer) {
+        setStreak((prevStreak) => prevStreak - 1);
+        setFails((prevFails) => prevFails + 1);
+      }
+      let poolClone = [...pool];
+      poolClone.splice(trackIndex, 1);
+      setPool(poolClone);
+      setTimeIndex(0);
+      setShowAnswer(false);
+      setUserAnswer(null);
+      setUserAnswers([]);
+      setSearch("");
+      setBeatOffset(0);
+    } else if (mode === "local") {
+      audio.pause();
+      setAudio(null);
+      let audioListClone = [...audioFileList];
+      audioListClone.splice(trackIndex, 1);
+      setAudioFileList(audioListClone);
+      let metadataListClone = [...metadataList];
+      metadataListClone.splice(trackIndex, 1);
+      setMetadataList(metadataListClone);
+      let poolClone = [...pool];
+      poolClone.splice(trackIndex, 1);
+      setPool(poolClone);
+      setTimeIndex(0);
+      setShowAnswer(false);
+      setUserAnswer(null);
+      setUserAnswers([]);
+      setSearch("");
     }
-    let poolClone = [...pool];
-    poolClone.splice(trackIndex, 1);
-    setPool(poolClone);
-    setTimeIndex(0);
-    setShowAnswer(false);
-    setUserAnswer(null);
-    setUserAnswers([]);
-    setSearch("");
-    setBeatOffset(0);
   };
 
   // determines outcome of game based off user answer
@@ -104,22 +155,24 @@ export default function Dashboard({
       setSearch("");
       setBeatOffset(0);
 
-      const idx = Math.floor(Math.random() * pool.length);
-      setTrackIndex(idx);
-      const nextTrack = pool[idx];
-      setPlayingTrack(nextTrack);
-      spotifyApi.getAudioAnalysisForTrack(nextTrack.id).then(
-        (res) => {
-          if (res.body.beats[0].start > 1.0) {
-            setBeatOffset(res.body.beats[0].start);
+      if (mode === "premium") {
+        const idx = Math.floor(Math.random() * pool.length);
+        setTrackIndex(idx);
+        const nextTrack = pool[idx];
+        setPlayingTrack(nextTrack);
+        spotifyApi.getAudioAnalysisForTrack(nextTrack.id).then(
+          (res) => {
+            if (res.body.beats[0].start > 1.0) {
+              setBeatOffset(res.body.beats[0].start);
+            }
+          },
+          (err) => {
+            console.log("Something went wrong!", err);
           }
-        },
-        (err) => {
-          console.log("Something went wrong!", err);
-        }
-      );
+        );
+      }
     }
-  }, [pool, spotifyApi]);
+  }, [mode, pool, spotifyApi]);
 
   // grabs search results based off user search
   useEffect(() => {
@@ -210,8 +263,9 @@ export default function Dashboard({
         handleShowAnswer={handleShowAnswer}
         handleAdd={handleAdd}
         handleNext={handleNext}
+        audio={audio}
       />
-      <NoPremiumModal show={!isPremium} />
+      <NoPremiumModal show={mode === "free"} />
     </Container>
   );
 }

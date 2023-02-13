@@ -255,12 +255,35 @@ body {
   border: 1px solid rgb(56, 56, 56);
 }
 
-/* #continue-guest-text {
-  color: rgb(160, 160, 160);
+#continue-guest-text {
+  font-size: 1.2rem;
+  color: rgb(199, 199, 199);
   cursor: pointer;
   user-select: none;
+  transition: 0.2s;
 }
 
 #continue-guest-text:hover {
-  color: rgb(199, 199, 199);
-} */
+  color: rgb(160, 160, 160);
+}
+
+#upload-label {
+  cursor: pointer;
+  border-radius: 5px;
+  height: 40px;
+  width: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(40, 42, 44);
+  user-select: none;
+  transition: 0.2s;
+}
+
+#upload-label:hover {
+  background-color: rgb(33, 37, 41);
+}
+
+#upload-label:active {
+  box-shadow: 0 0 0 4px rgb(40, 42, 44);
+}

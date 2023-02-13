@@ -40,11 +40,11 @@ export default function InfoModal({ show, onHide }) {
         <Container>
           <Rule
             icon="spotify"
-            rule="Login to your Spotify account. Needs to be premium."
+            rule="Login to your Spotify account. Needs to be premium. Or, play with local files."
           />
           <Rule
             icon="settings"
-            rule="Set your track pool with this icon (default Top 50 Tracks - Global)"
+            rule="Set your track pool with this icon (default Top 50 Tracks - Global if using Spotify)"
           />
           <Rule
             icon="listen"

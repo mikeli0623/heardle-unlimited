@@ -1,15 +1,15 @@
 export default function PlayerButtons({
   disabled,
-  accessToken,
   player,
-  playFirstTrack,
-  isFirstPlay,
   isPlaying,
+  setPlaying,
   surrender,
   freePlay,
   addedTime,
   handleLeft,
-  handleRight,
+  handleMid,
+  handleNext,
+  handleShowAnswer,
 }) {
   return (
     <div id="player-buttons-container">
@@ -23,9 +23,7 @@ export default function PlayerButtons({
           <div
             className="player-icon chevron-icon"
             onClick={() => {
-              if (!disabled) {
-                handleLeft();
-              }
+              if (!disabled) handleLeft();
             }}
           />
         </div>
@@ -43,7 +41,9 @@ export default function PlayerButtons({
         <div
           className="player-icon add-time-icon"
           onClick={() => {
-            if (!disabled) handleLeft();
+            if (!disabled) {
+              handleLeft();
+            }
           }}
         >
           +{addedTime}s
@@ -57,21 +57,18 @@ export default function PlayerButtons({
             isPlaying ? "pause.svg" : "play.svg"
           })`,
         }}
-        onClick={() => {
-          if (accessToken && !disabled) {
-            if (isFirstPlay) {
-              playFirstTrack();
-            } else player.togglePlay();
-          }
-        }}
+        onClick={handleMid}
       />
       <div className="d-flex justify-content-center align-items-center chevron-container">
         <div
           className="player-icon chevron-icon"
           onClick={() => {
             if (!disabled) {
-              player.pause();
-              handleRight();
+              if (freePlay) {
+                player.pause();
+                setPlaying(false);
+                handleNext();
+              } else handleShowAnswer();
             }
           }}
         />
