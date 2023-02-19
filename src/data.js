@@ -52,4 +52,4 @@ export const decadeOptions = [
 ];
 
 export const HOST_URL = "https://heardle-unlimited.onrender.com";
-export const SERVER_URL = "https://heardle-unlimited.onrender.com";
+export const SERVER_URL = "https://heardle-unlimited-service.onrender.com";
