@@ -54,3 +54,6 @@ app.post("/login", (req, res) => {
 });
 
 app.listen(3001);
+console.log(`REDIRECT_URI: ${process.env.REDIRECT_URI}`);
+console.log(`CLIENT_ID: ${process.env.CLIENT_ID}`);
+console.log(`CLIENT_SECRET: ${process.env.CLIENT_SECRET}`);
