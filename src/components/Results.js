@@ -11,8 +11,9 @@ const ResultSymbols = ({ result }) => {
   );
 };
 
-export default function Results({ won, times, trackIndex, userAnswers, pool }) {
-  const winQuotes = ["You won!"];
+export default function Results({ times, trackIndex, userAnswers, pool }) {
+  const win = userAnswers[userAnswers.length - 1] === pool[trackIndex].pattern;
+  const winQuotes = ["You won!", "Nice one!"];
   const loseQuotes = ["You lost.", "Better luck next time.", "So close."];
 
   return (
@@ -27,7 +28,7 @@ export default function Results({ won, times, trackIndex, userAnswers, pool }) {
         }}
       />
       <h4>
-        {won
+        {win
           ? winQuotes[Math.floor(Math.random() * winQuotes.length)]
           : loseQuotes[Math.floor(Math.random() * loseQuotes.length)]}
       </h4>

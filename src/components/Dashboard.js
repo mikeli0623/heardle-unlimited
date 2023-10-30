@@ -210,7 +210,6 @@ export default function Dashboard({
       <div className="info-text">Tracks Remaining: {pool.length}</div>
       {showAnswer ? (
         <Results
-          won={userAnswer === pool[trackIndex].pattern}
           userAnswers={userAnswers}
           times={times}
           timeIndex={timeIndex}
